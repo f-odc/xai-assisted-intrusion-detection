@@ -1,1 +1,4 @@
 .env
+data/CICIDS2017
+data/preprocessed
+label_encoding
