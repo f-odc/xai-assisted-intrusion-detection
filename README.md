@@ -43,4 +43,4 @@ xai-assisted-intrusion-detection-system
 3. Build DNN Intrusion Detection System: *intrusion-detection-system.ipynb*
 4. Generate Adversarial Attacks: *attack-generator.ipynb*
 
-**Important** The same data splits must be used for both the Intrusion Detection System and adversarial attack generation to ensure consistency and comparability of results.
+**Important Note:** The same data splits must be used for both the Intrusion Detection System and adversarial attack generation to ensure consistency and comparability of results.
