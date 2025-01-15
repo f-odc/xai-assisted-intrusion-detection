@@ -22,14 +22,14 @@ Download CICIDS2017 Dataset:
 https://www.kaggle.com/datasets/chethuhn/network-intrusion-dataset
 
 ### Store Dataset
-Store the CICIDS2017 Dataset in the folder `data/`. It should look like that:
+Store the files from the CICIDS2017 Dataset in the folder `CICIDS2017/raw/`. It should look like that:
 ```
 xai-assisted-intrusion-detection-system
 │   README.md
 │   ...   
 │
-└───data
-│   └───CICIDS2017
+└───CICIDS2017
+│   └───raw
 │       |   Friday-WorkingHours-Afternoon-DDos.pcap_ISCX
 |       |   Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX
 |       |   Friday-WorkingHours-Morning.pcap_ISCX

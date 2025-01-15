@@ -1,6 +1,2 @@
 .env
-data/CICIDS2017
-data/preprocessed
-data/CICIDS2017.zip
-data/train_test_split
-label_encoding
+CICIDS2017/CICIDS2017.zip
