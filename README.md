@@ -43,6 +43,7 @@ xai-assisted-intrusion-detection-system
 2. Split Data into *train* and *test* sets: *data-splitter.ipynb*.
 3. Build DNN Intrusion Detection System: *intrusion-detection-system.ipynb*
 4. Generate Adversarial Attacks: *attack-generator.ipynb*
-5. Generate Explanations: *explainer.ipyb*
+5. Generate Explanations: *explainer.ipynb*
+6. Detect Adversarial Attacks: *detector.ipynb*
 
 **Important Note:** The same data splits must be used for both the Intrusion Detection System and adversarial attack generation to ensure consistency and comparability of results.
