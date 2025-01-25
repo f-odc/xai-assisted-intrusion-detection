@@ -45,5 +45,6 @@ xai-assisted-intrusion-detection-system
 4. Generate Adversarial Attacks: *attack-generator.ipynb*
 5. Generate Explanations: *explainer.ipynb*
 6. Detect Adversarial Attacks: *detector.ipynb*
+7. Visualize Findings: *visualizer.ipynb*
 
 **Important Note:** The same data splits must be used for both the Intrusion Detection System and adversarial attack generation to ensure consistency and comparability of results.
