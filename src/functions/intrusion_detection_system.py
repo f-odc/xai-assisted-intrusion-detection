@@ -1,5 +1,5 @@
 """
-This module contains functions for building an intrusion detection system using a deep neural network.
+intrusion_detection_system: This module contains functions for building an intrusion detection system using a deep neural network.
 
 Functions:
 - build_intrusion_detection_system: Builds an intrusion detection system using a deep neural network.
@@ -8,8 +8,8 @@ Functions:
 
 Usage:
 ------
-import intrusion_detection_system as ids
-model = ids.build_intrusion_detection_system(X_train, y_train, X_test, y_test)
+>>> import intrusion_detection_system as ids
+>>> model = ids.build_intrusion_detection_system(X_train, y_train, X_test, y_test)
 
 """
 

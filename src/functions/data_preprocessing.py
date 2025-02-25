@@ -17,8 +17,8 @@ Functions:
 
 Usage:
 ------
-import data_preprocessing as dp
-preprocessed_data = dp.preprocess(encoding_type=0, norm_type=0)
+>>> import data_preprocessing as dp
+>>> preprocessed_data = dp.preprocess(encoding_type=0, norm_type=0)
 
 """
 
