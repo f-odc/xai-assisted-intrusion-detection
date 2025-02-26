@@ -23,7 +23,7 @@ import setuptools.dist # needed to avoid error
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
 
 def create_min_max_normalizer(df: pd.DataFrame):
@@ -147,3 +147,9 @@ def evaluate_model(y_pred, y_test:pd.DataFrame):
 
     # precision, recall, f1-score
     print(classification_report(y_test_classes, y_pred_classes, target_names=y_test.columns, zero_division=0))
+
+    tn, fp, fn, tp = confusion_matrix(y_test_classes, y_pred_classes).ravel()
+    print(f"True Negative Rate: {tn/(tn+fp)*100:.2f}%")
+    print(f"False Positive Rate: {fp/(tn+fp)*100:.2f}%")
+    print(f"True Positive Rate: {tp/(tp+fn)*100:.2f}%")
+    print(f"False Negative Rate: {fn/(tp+fn)*100:.2f}%")
