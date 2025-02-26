@@ -25,19 +25,38 @@ https://www.kaggle.com/datasets/chethuhn/network-intrusion-dataset
 ### Store Dataset
 Store the files from the CICIDS2017 Dataset in the folder `CICIDS2017/raw/`. It should look like that:
 ```
-xai-assisted-intrusion-detection-system
-│   README.md
-│   ...   
-│
-└───CICIDS2017
-│   └───raw
-│       |   Friday-WorkingHours-Afternoon-DDos.pcap_ISCX
-|       |   Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX
-|       |   Friday-WorkingHours-Morning.pcap_ISCX
-|       |   ...
+xai-assisted-intrusion-detection-system/
+│── README.md
+│...   
+│ ├── CICIDS2017/
+│ │ ├── raw/
+│ │ │ ├── Friday-WorkingHours-Afternoon-DDos.pcap_ISCX
+│ │ │ ├── Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX
+│ │ │ ├── Friday-WorkingHours-Morning.pcap_ISCX
+│ │ │ ├── ...
 ```
 
-## Workflow & Organization 
+## 📂 Organization & Workflow  
+
+The source code of this project is organized into three main folders: **`functions/`**, **`notebooks/`**, and **`prototypes/`**, each serving a specific purpose.  
+```
+src/ 
+│── functions/ # Core Python modules with reusable functions
+│ ├── attack_generator.py
+│ ├── data_preprocessing.py 
+│ ├── detector.py
+│ ├── explainer.py
+│ ├── ...
+│── notebooks/ # Jupyter notebooks for visualization and experimentation 
+│ ├── attack-generator.ipynb
+│ ├── data_preprocessing.ipynb  
+│ ├── data_splitter.ipynb  
+│ ├── ...
+│── prototypes/ # Different prototype implementations using core functions 
+│ ├── ...
+```
+
+This project follows a structured workflow to build a **xai-assisted intrusion detection system**. Below are the main steps:   
 
 1. Preprocess CICIDS2017 data: *data-preprocessing.ipynb*.
 2. Split Data into *train* and *test* sets: *data-splitter.ipynb*.
