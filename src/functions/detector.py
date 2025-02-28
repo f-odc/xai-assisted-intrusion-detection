@@ -1,5 +1,5 @@
 """
-detector: This module contains functions to build and train a deep neural network to detect adversarial attacks.
+This module contains functions to build and train a deep neural network to detect adversarial attacks.
 
 Functions:
 - create_min_max_normalizer: Creates a Min-Max normalizer fitted to the given DataFrame.
@@ -8,6 +8,7 @@ Functions:
 - build_detector: Builds and trains a deep neural network to detect adversarial attacks. Evaluate the model using the test data.
 - create_dnn: Creates a deep neural network model.
 - evaluate_model: Evaluates the model using the predicted and actual labels.
+- plot_performance: Plots the performance of the dnn model during training.
 
 Usage:
 ------
@@ -20,8 +21,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import setuptools.dist # needed to avoid error
-import tensorflow as tf
-from tensorflow import keras
+import keras
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
@@ -79,7 +79,7 @@ def build_train_datasets(shap_values:pd.DataFrame, adv_shap_values:pd.DataFrame)
     return X, y
 
 
-def build_detector(X_train, y_train, X_test, y_test):
+def build_detector(X_train, y_train, X_test, y_test, plot_train_performance=False) -> keras.Sequential:
     """
     Builds and trains a deep neural network to detect adversarial attacks. Evaluate the model using the test data.
 
@@ -88,6 +88,7 @@ def build_detector(X_train, y_train, X_test, y_test):
         y_train (DataFrame): The training labels.
         X_test (DataFrame): The test features.
         y_test (DataFrame): The test labels.
+        plot_train_performance (bool, optional): Whether to plot the performance of the model during training. Defaults to False.
 
     Returns:
         Sequential: The trained Keras sequential model.
@@ -97,6 +98,9 @@ def build_detector(X_train, y_train, X_test, y_test):
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     # Train
     model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=100)
+    # plot performance
+    if plot_train_performance:
+        plot_performance(model.history)
     # Predict
     y_pred = model.predict(X_test)
     # Evaluate
@@ -104,7 +108,7 @@ def build_detector(X_train, y_train, X_test, y_test):
     return model
 
 
-def create_dnn(X_train:pd.DataFrame, y_train):
+def create_dnn(X_train:pd.DataFrame, y_train) -> keras.Sequential:
     """
     Creates a deep neural network model.
     
@@ -153,3 +157,22 @@ def evaluate_model(y_pred, y_test:pd.DataFrame):
     print(f"False Positive Rate: {fp/(tn+fp)*100:.2f}%")
     print(f"True Positive Rate: {tp/(tp+fn)*100:.2f}%")
     print(f"False Negative Rate: {fn/(tp+fn)*100:.2f}%")
+
+
+def plot_performance(history):
+    """
+    Plots the performance of the dnn model during training.
+
+    Args:
+        history (History): The history object returned by the model.history method.
+    """
+    import matplotlib.pyplot as plt
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model accuracy')
+    plt.ylabel('Loss / Accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val', 'train_loss', 'val_loss'], loc='upper left')
+    plt.show()
