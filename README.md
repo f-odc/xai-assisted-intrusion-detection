@@ -69,3 +69,7 @@ This project follows a structured workflow to build a **xai-assisted intrusion d
 Helper functions: *utilib*
 
 **Important Note:** The same data splits must be used for both the Intrusion Detection System and adversarial attack generation to ensure consistency and comparability of results.
+
+## 🔬 Prototypes
+Here are all available prototypes:
+- [Prototype alpha](docs/Prototype%20-%20alpha.md): A simple binary adversarial detection.
