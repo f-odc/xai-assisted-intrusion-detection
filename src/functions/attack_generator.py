@@ -1,5 +1,5 @@
 """
-attack_generator: Generates adversarial samples using the ART library. Applicable for White- and Black-Box attacks.
+Generates adversarial samples using the ART library. Applicable for White- and Black-Box attacks.
 
 Functions:
 - convert_to_art_model: Converts a Keras model to an ART model.
@@ -21,6 +21,7 @@ from tensorflow import keras
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from art.attacks.evasion import CarliniL2Method, FastGradientMethod
 import numpy as np
+import pandas as pd
 
 
 def convert_to_art_model(model, X_train):
@@ -87,7 +88,7 @@ def evaluate_art_model(model, X_test, y_test):
     return accuracy
 
 
-def generate_cw_attacks(classifier, X, target_label=None):
+def generate_cw_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.DataFrame:
     """
     Generates Carlini & Wagner White-Box attacks on a model.
     
@@ -104,12 +105,13 @@ def generate_cw_attacks(classifier, X, target_label=None):
     # Generate adversarial examples
     X_np = X.to_numpy()
     X_adv_cw = attack_cw.generate(x=X_np, y=target_label if target_label is not None else None)
+    X_adv_cw = pd.DataFrame(X_adv_cw, columns=X.columns)
     print(f'Adversarial C&W examples generated. Shape: {X_adv_cw.shape}')
 
     return X_adv_cw
 
 
-def generate_fgsm_attacks(classifier, X, target_label=None):
+def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.DataFrame:
     """
     Generates Fast Gradient Sign Method Whote-Box attacks on a model.
     
@@ -127,6 +129,7 @@ def generate_fgsm_attacks(classifier, X, target_label=None):
     # Generate adversarial examples
     X_np = X.to_numpy()
     X_adv_fgsm = attack_fgsm.generate(x=X_np, y=target_label if target_label is not None else None)
+    X_adv_fgsm = pd.DataFrame(X_adv_fgsm, columns=X.columns)
     print(f'Adversarial FGSM examples generated. Shape: {X_adv_fgsm.shape}')
 
     return X_adv_fgsm
