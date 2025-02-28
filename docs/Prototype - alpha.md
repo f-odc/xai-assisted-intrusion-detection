@@ -47,16 +47,21 @@ We split the *train* data once again in *train* and *validation* data. This data
 We focus only on the simple **FGSM** attack. We created `3.200` adversarial samples on the *train* set. With the adversarial samples we decrease the prediction performance of our IDS to **`17%`**
 
 The different data distribution from normal samples and *FGSM* adversarial samples are shown here: 
+
 ![Normal vs Adversarial data](images/normal_vs_adversarial_data.png)
+
 ## Explanations
 
 We generate `3.200` explanations from normal samples (*X_test*) and `3.200` explanations from adversarial modified samples (*X_adv_fgsm*).
 
 As we can see, the explanations from both classes differ more than the raw data.
+
 ![Normal vs Adversarial explanations](images/normal_vs_adverarial_explanations.png)
+
 ## Detector Model
 
 We build a dataset for our detector model by adding labels `[1, 0]` to the normal explanations and `[0, 1]` to adversarial explanations. With these dataset we train our detector:
+
 ![Detector train evaluation](images/train_detector_evaluation.png)
 
 ---
