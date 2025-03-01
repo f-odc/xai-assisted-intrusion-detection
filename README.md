@@ -2,12 +2,12 @@
 
 ---
 
-## Requirements
+## 🔧 Requirements
 
 - **Python 3.12** <p>
 - If you encounter issues, try using **Python 3.12.8.**
 
-## Get Started
+## 📌 Get Started
 
 ### Setup
 1. Create virtual environment <p>
@@ -53,6 +53,7 @@ src/
 │ ├── data_splitter.ipynb  
 │ ├── ...
 │── prototypes/ # Different prototype implementations using core functions 
+│ ├── alpha.ipynb
 │ ├── ...
 ```
 
@@ -66,10 +67,8 @@ This project follows a structured workflow to build a **xai-assisted intrusion d
 6. Detect Adversarial Attacks: *detector.ipynb*
 7. Visualize Findings: *visualizer.ipynb* <p>
 
-Helper functions: *utilib*
-
 **Important Note:** The same data splits must be used for both the Intrusion Detection System and adversarial attack generation to ensure consistency and comparability of results.
 
-## 🔬 Prototypes
+## 💡 Prototypes
 Here are all available prototypes:
 - [Prototype alpha](docs/Prototype%20-%20alpha.md): A simple binary adversarial detection.
