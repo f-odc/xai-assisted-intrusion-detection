@@ -80,7 +80,7 @@ def evaluate_art_model(model, X_test, y_test):
     y_pred_binary = np.array(y_pred).argmin(axis=1)
     # Evaluate
     accuracy = accuracy_score(y_test, y_pred)
-    print(f"Accuracy: {accuracy}")
+    print(f"Accuracy: {accuracy*100:.2f}%")
     print(classification_report(y_test, y_pred, target_names=y_test.columns))
     print("Confusion Matrix: Positive == BENIGN")
     tn, fp, fn, tp = confusion_matrix(y_test_binary, y_pred_binary).ravel()

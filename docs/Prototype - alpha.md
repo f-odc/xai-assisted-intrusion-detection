@@ -44,7 +44,9 @@ We split the *train* data once again in *train* and *validation* data. This data
 # Detector
 ## FGSM - Adversarial Attacks
 
-We focus only on the simple **FGSM** attack. We created `3.200` adversarial samples on the *train* set. With the adversarial samples we decrease the prediction performance of our IDS to **`17%`**
+We focus only on the simple **FGSM** attack. We created `3.200` adversarial samples on the *train* set. With the adversarial samples we decrease the prediction performance of our IDS to under **`19%`**
+
+![Attack result](images/attack_result.png)
 
 The different data distribution from normal samples and *FGSM* adversarial samples are shown here: 
 
