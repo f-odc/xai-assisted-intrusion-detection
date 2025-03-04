@@ -94,11 +94,12 @@ def preprocess_data(df:pd.DataFrame, encoding_type: int, normalizer, zero_column
     Returns:
         DataFrame: Feature DataFrame
         DataFrame: Label DataFrame
+        ndarray: Used indices
     """
     print("-- Preprocessing data --")
     # Sample data
     if sample_size != None:
-        df = sample_balanced_data(df, sample_size, random_sample_state)
+        df, used_indices = sample_balanced_data(df, sample_size, random_sample_state)
     # Split data into labels and features
     label_df, feature_df = split_label_and_features(df)
     # Remove irrelevant features
@@ -111,7 +112,7 @@ def preprocess_data(df:pd.DataFrame, encoding_type: int, normalizer, zero_column
     else: raise ValueError("Invalid encoding type")
     # Normalize data
     feature_df = normalization(normalizer, feature_df)
-    return feature_df, label_df
+    return feature_df, label_df, used_indices
 
 
 def combine_all_data_files():
@@ -174,7 +175,7 @@ def extract_labels(df, label_names):
     return extract_df
 
 
-def sample_balanced_data(df, sample_size, random_state) -> pd.DataFrame:
+def sample_balanced_data(df, sample_size, random_state) -> tuple[pd.DataFrame, np.ndarray]:
     """
     Samples a given number of rows from each label class to create a balanced dataset.
 
@@ -185,12 +186,15 @@ def sample_balanced_data(df, sample_size, random_state) -> pd.DataFrame:
 
     Returns:
         DataFrame: A DataFrame containing the sampled balanced data.
+        ndarray: An array of used indices.
     """
     print("--- Sampling balanced data ---")
     # for each label in label_names sample sample_size rows
     df = df.groupby(' Label', group_keys=False).apply(lambda x: x.sample(sample_size, random_state=random_state))#.reset_index(drop=True)
+    used_indices = df.index
+    df = df.reset_index(drop=True)
     print(f"Sample to shape: {df.shape}")
-    return df
+    return df, used_indices
 
 
 def split_label_and_features(df):
