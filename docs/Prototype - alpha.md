@@ -32,11 +32,11 @@ We create a balanced dataset consists only of *BENIGN* and *DDoS* samples.  We r
 
 ## IDS Model
 
-We split the dataset into *train* and *test* data with a `0.2`split ratio:
+We split the dataset into *train* and *test* data with a `0.2` split ratio:
 ```python
 X_train, X_test, y_train, y_test = train_test_split(feature_df, label_df, test_size=0.2, random_state=42)
 ```
-We split the *train* data once again in *train* and *validation* data. This data is used to train our IDS. On the *test* data we achieve a accuracy of over `98%`.
+We split the *train* data once again in *train* and *validation* data. This data is used to train our IDS. On the *test* data we achieve an accuracy of over `98%` in detecting *BENGIN* and *ATTACK* network traffic.
 
 ![IDS result](images/ids_result.png)
 
@@ -62,7 +62,9 @@ As we can see, the explanations from both classes differ more than the raw data.
 
 ## Detector Model
 
-We build a dataset for our detector model by adding labels `[1, 0]` to the normal explanations and `[0, 1]` to adversarial explanations. With these dataset we train our detector:
+We build a dataset for our detector model by adding labels `[1, 0]` to the normal explanations and `[0, 1]` to adversarial explanations. With this dataset, we train our detector. The goal of the trained detector is to distinguish between adversarial modified data (from the *FGSM* attack) and normal data.
+
+The detector model is trained with a train-test split ratio of `0.1` on the dataset and a train-validation split ratio of `0.2` on the *train* set. The model achieves an accuracy of `99.8%` on the *test* set.
 
 ![Detector train evaluation](images/train_detector_evaluation.png)
 
