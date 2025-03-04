@@ -67,7 +67,7 @@ def plot_shap_summary(shap_values, X:pd.DataFrame, num:int = None, target_indice
         shap.summary_plot(shap_values[target_indices], X.iloc[target_indices], max_display=num if num is not None else 10)
 
 
-def plot_shap_summary_comparison(sv_1, X_1:pd.DataFrame, sv_2, X_2:pd.DataFrame, num:int = None, target_indices=None):
+def plot_shap_summary_comparison(sv_1, X_1:pd.DataFrame, sv_2, X_2:pd.DataFrame, num:int = None, target_indices=None, title=''):
     """
     Plots two SHAP summary plot side by side.
     
@@ -78,8 +78,10 @@ def plot_shap_summary_comparison(sv_1, X_1:pd.DataFrame, sv_2, X_2:pd.DataFrame,
         X_2 (DataFrame): The data to plot SHAP values for the second model.
         num (int, optional): The number of features to display. If None, 10 features are displayed. Defaults to None.
         target_indices (list, optional): The indices of the shap values that should be plotted. If None, all samples are used. Defaults to None.
+        title (str, optional): The title of the plot. Defaults to "".
     """
     plt.figure(figsize=(16,5))
+    plt.suptitle(title)
     plt.subplot(1,2,1)
     # plot_size=None, show=False important to fit plots into figure
     if target_indices == None: # all samples

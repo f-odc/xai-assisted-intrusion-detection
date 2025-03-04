@@ -14,7 +14,7 @@ The data distribution of the *CICIDS2017* dataset is not balanced. We have a lot
 
 In our Prototype we decided to focus just on a single attack class (**DDoS**). Because this is our first Prototype, we want to find out the best possible detection setup and for this we limit the scope to only one attack class. So we operate in a **binary-classification** setup which is very well suited at the beginning. We choose the **DDoS** class because it has a lot of samples in it. 
 
-To make this Prototype fast executable we will just work with `4000`samples. We also utilize only a single adversarial attack (**FGSM**) to generate and learn from its explanations. We decide on *FGSM* attacks because they can be very fast generated and they change a lot of values which results in a high accuracy drop of the IDS. Therefore, there are easy to detect, but powerful. To generate explanations of the decision model, we use **SHAP**.
+To make this Prototype fast executable we will just work with `4000` samples. We also utilize only a single adversarial attack (**FGSM**) to generate and learn from its explanations. We decide on *FGSM* attacks because they can be very fast generated, and they change a lot of values which results in a high accuracy drop of the IDS. Therefore, there are easy to detect, but powerful. To generate explanations of the decision model, we use **SHAP**.
 
 The goal of this Prototype *alpha* is to identify a working prediction structure, ranging from an accuracy IDS to an accuracy adversarial attack detector. We will later build on the identified structure to detect more attacks classes and more adversarial attacks.
 
@@ -59,6 +59,10 @@ We generate `3.200` explanations from normal samples (*X_test*) and `3.200` expl
 As we can see, the explanations from both classes differ more than the raw data.
 
 ![Normal vs Adversarial explanations](images/normal_vs_adverarial_explanations.png)
+
+Comparing **normal explanations** (left) with **adversarial explanations** (right) on ***BENIGN*** samples, we observe differences in both the key features influencing the prediction and the distribution of SHAP values - even for the same feature.
+
+![Explanation Comparison](images/explanation_comparison.png)
 
 ## Detector Model
 
