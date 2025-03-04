@@ -174,7 +174,7 @@ def extract_labels(df, label_names):
     return extract_df
 
 
-def sample_balanced_data(df, sample_size, random_state):
+def sample_balanced_data(df, sample_size, random_state) -> pd.DataFrame:
     """
     Samples a given number of rows from each label class to create a balanced dataset.
 
@@ -188,7 +188,7 @@ def sample_balanced_data(df, sample_size, random_state):
     """
     print("--- Sampling balanced data ---")
     # for each label in label_names sample sample_size rows
-    df = df.groupby(' Label', group_keys=False).apply(lambda x: x.sample(sample_size, random_state=random_state)).reset_index(drop=True)
+    df = df.groupby(' Label', group_keys=False).apply(lambda x: x.sample(sample_size, random_state=random_state))#.reset_index(drop=True)
     print(f"Sample to shape: {df.shape}")
     return df
 
