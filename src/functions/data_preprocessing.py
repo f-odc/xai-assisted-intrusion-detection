@@ -100,6 +100,8 @@ def preprocess_data(df:pd.DataFrame, encoding_type: int, normalizer, zero_column
     # Sample data
     if sample_size != None:
         df, used_indices = sample_balanced_data(df, sample_size, random_sample_state)
+    else:
+        used_indices = df.index
     # Split data into labels and features
     label_df, feature_df = split_label_and_features(df)
     # Remove irrelevant features
