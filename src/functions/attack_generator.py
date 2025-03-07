@@ -5,6 +5,7 @@ Functions:
 - convert_to_art_model: Converts a Keras model to an ART model.
 - evaluate_art_model: Evaluates an ART model on a test set.
 - generate_cw_attacks: Generates Carlini & Wagner White-Box attacks on a model.
+- generate_cw_attacks_parallel: Generates Carlini & Wagner White-Box attacks on a model using parallel processing.
 - generate_fgsm_attacks: Generates Fast Gradient Sign Method White-Box attacks on a model.
 
 Usage:
@@ -22,6 +23,12 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 from art.attacks.evasion import CarliniL2Method, FastGradientMethod
 import numpy as np
 import pandas as pd
+import os
+import multiprocessing
+import logging
+
+# Optionally: Suppress TensorFlow warnings globally
+tf.get_logger().setLevel(logging.ERROR)
 
 
 def convert_to_art_model(model, X_train):
@@ -111,6 +118,46 @@ def generate_cw_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.Dat
     return X_adv_cw
 
 
+def generate_cw_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, num_cores=1) -> pd.DataFrame:
+    """
+    Generates Carlini & Wagner White-Box attacks on a model using parallel processing.
+
+    Args:
+        classifier (TensorFlowV2Classifier): The ART model to attack.
+        X (DataFrame): The features to modify.
+        target_label (Array, optional): The one-hot encoded label the model should predict after the attack, e.g. [0, 1] for 'ATTACK'. If None, the attack is untargeted. Defaults to None.
+        num_cores (int, optional): The number of CPU cores to use for parallel processing. Defaults to 1.
+
+    Returns:
+        DataFrame: The generated adversarial samples
+    """
+    print(f"Running attack using {num_cores} CPU cores...\n")
+
+    # Split data into `num_cores` equal parts
+    def split_into_batches(data, num_splits):
+        split_size = len(data) // num_splits
+        return [data[i * split_size: (i + 1) * split_size] for i in range(num_splits - 1)] + [data[(num_splits - 1) * split_size:]]
+
+    # convert X
+    X_np = X.to_numpy()
+    # generate batches for parallel processing
+    X_batches = split_into_batches(X_np, num_cores)
+    target_batches = split_into_batches(target_label, num_cores) if target_label is not None else None
+
+    # Start parallel processing
+    with multiprocessing.Pool(processes=num_cores, initializer=init_parallel_process, initargs=(classifier,)) as pool:
+        if target_label is None:
+            results = pool.map(generate_cw_attack_batch, X_batches)
+        else:
+            results = pool.starmap(generate_cw_attack_batch, zip(X_batches, target_batches))
+
+    # Merge results back into a single NumPy array
+    X_adv_cw = np.vstack(results)
+    
+    X_adv_cw = pd.DataFrame(X_adv_cw, columns=X.columns)
+    return X_adv_cw
+
+
 def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.DataFrame:
     """
     Generates Fast Gradient Sign Method Whote-Box attacks on a model.
@@ -133,3 +180,34 @@ def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.D
     print(f'Adversarial FGSM examples generated. Shape: {X_adv_fgsm.shape}')
 
     return X_adv_fgsm
+
+
+def init_parallel_process(model):
+    """
+    Initializes a process with shared variables. Necessary for multiprocessing.
+    
+    Args:
+        model (TensorFlowV2Classifier): The ART model to attack.
+    """
+    global classifier_shared
+    classifier_shared = model
+
+
+def generate_cw_attack_batch(batch, batch_target=None):
+    """
+    Generates adversarial examples for a batch of samples using the Carlini & Wagner White-Box attack. Used in parallel processing.
+
+    Args:
+        batch (Array): The batch of samples to attack.
+        batch_target (Array, optional): The one-hot encoded label the model should predict after the attack. If None, the attack is untargeted. Defaults to None.
+
+    Returns:
+        Array: The adversarial modified batches.
+    """
+    pid = os.getpid()  # Get process ID for debugging
+    print(f"Process {pid} is generating adversarial examples for batch of size {len(batch)} \n")
+    # Create a new attack instance (ART objects may not be shared directly)
+    attack = CarliniL2Method(classifier=classifier_shared, confidence=0.1, targeted=(batch_target is not None))
+    # Generate adversarial examples
+    adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None)
+    return adv_samples
