@@ -71,7 +71,7 @@ def convert_to_art_model(model, X_train):
     return classifier
 
 
-def evaluate_art_model(model, X_test, y_test):
+def evaluate_art_model(model, X_test, y_test) -> np.ndarray:
     """
     Evaluates an ART model on a test set. Prints the accuracy, classification report, and true/false positives/negatives.
     
@@ -79,6 +79,9 @@ def evaluate_art_model(model, X_test, y_test):
         model (TensorFlowV2Classifier): The ART model to evaluate.
         X_test (DataFrame): The test features.
         y_test (DataFrame): The test labels.
+        
+    Returns:
+        np.ndarray: The model's predictions.
     """
     # Predict
     y_pred = model.predict(X_test)
@@ -92,7 +95,7 @@ def evaluate_art_model(model, X_test, y_test):
     print("Confusion Matrix: Positive == BENIGN")
     tn, fp, fn, tp = confusion_matrix(y_test_binary, y_pred_binary).ravel()
     print(f"TN: {tn}, FP: {fp}, FN: {fn}, TP: {tp}")
-    return accuracy
+    return y_pred
 
 
 def generate_cw_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.DataFrame:
