@@ -24,6 +24,20 @@ import setuptools.dist # needed to avoid error
 import keras
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+import os
+import random
+import tensorflow as tf
+
+
+def set_random_seeds(seed=42):
+    """
+    Sets random seeds to ensure reproducibility of the prediction from DNNs across multiple runs.
+    """
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+    os.environ['TF_DETERMINISTIC_OPS'] = '1'  # Ensures deterministic GPU operations
 
 
 def create_min_max_normalizer(df: pd.DataFrame):
@@ -119,6 +133,9 @@ def create_dnn(X_train:pd.DataFrame, y_train) -> keras.Sequential:
     Returns:
         Sequential: A compiled Keras sequential model.
     """
+    # Set seeds before model creation
+    set_random_seeds(42)
+
     model = keras.Sequential([
         keras.layers.Input(shape=(X_train.shape[1],)),  # Define input shape explicitly
         keras.layers.Dense(50, activation='relu'),  # Hidden layer
