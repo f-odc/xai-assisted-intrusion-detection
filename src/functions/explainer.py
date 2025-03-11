@@ -3,7 +3,9 @@ This module contains functions for generating explanations for ML models.
 
 Functions:
 - generate_shap_explainer: Generates a SHAP explainer for a model.
+- generate_lime_explainer: Generates a LIME explainer for a model.
 - generate_shap_values: Generates SHAP values for a model.
+- generate_lime_explanation: Generates a single LIME explanation for the prediction of a model.
 - plot_shap_summary: Plots a SHAP summary plot.
 - plot_shap_summary_comparison: Plots two SHAP summary plot side by side.
 
@@ -15,6 +17,7 @@ Usage:
 
 import pandas as pd
 import shap
+from lime.lime_tabular import LimeTabularExplainer
 import matplotlib.pyplot as plt
 
 
@@ -33,6 +36,21 @@ def generate_shap_explainer(model, mask:pd.DataFrame):
     return shap_explainer
 
 
+def generate_lime_explainer(mask:pd.DataFrame, label_names):
+    """
+    Generates a LIME explainer for a model.
+
+    Args:
+        model (TensorFlowV2Classifier): The model to explain.
+        mask (DataFrame): The baseline mask features. Used for the explainer baseline.
+
+    Returns:
+        LimeTabularExplainer: The LIME explainer.
+    """
+    lime_explainer = LimeTabularExplainer(mask.values, feature_names=mask.columns, class_names=label_names, discretize_continuous=True)
+    return lime_explainer
+
+
 def generate_shap_values(shap_explainer, X:pd.DataFrame) -> pd.DataFrame:
     """
     Generates SHAP values for a model.
@@ -49,6 +67,24 @@ def generate_shap_values(shap_explainer, X:pd.DataFrame) -> pd.DataFrame:
     shap_values = shap_values[:, :, 0]
     shap_values_df = pd.DataFrame(shap_values.values, columns=X.columns)
     return shap_values, shap_values_df
+
+
+def generate_lime_explanation(lime_explainer:LimeTabularExplainer, X, model, num:int = None):
+    """
+    Generates a single LIME explanation for the prediction of a model.
+
+    Args:
+        lime_explainer (LimeTabularExplainer): The LIME explainer to use.
+        X : The single data to generate LIME explanations for, e.g. X_train.values[0].
+        model (TensorFlowV2Classifier): The model to explain.
+        num (int, optional): The number of features to display. If None, 10 features are displayed. Defaults to None.
+
+    Returns:
+        list: The generated explanations from the LIME explainer.
+    """
+    explanation = lime_explainer.explain_instance(X, model.predict, num_features=num if num is not None else 10)
+    explanation.show_in_notebook(show_table=True)
+    return explanation
 
 
 def plot_shap_summary(shap_values, X:pd.DataFrame, num:int = None, target_indices=None):
