@@ -21,6 +21,19 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 import numpy as np
 import pandas as pd
+import os
+import random
+
+
+def set_random_seeds(seed=42):
+    """
+    Sets random seeds to ensure reproducibility of the prediction from DNNs across multiple runs.
+    """
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+    os.environ['TF_DETERMINISTIC_OPS'] = '1'  # Ensures deterministic GPU operations
 
 
 def build_intrusion_detection_system(X_train, y_train, X_test, y_test):
@@ -59,6 +72,8 @@ def create_model(X_train, y_train):
     Returns:
         Sequential: A compiled Keras sequential model.
     """
+    # Set seeds before model creation
+    set_random_seeds(42)
     # keras model for handling one hot encoded labels -> needed for attack creation
     model = keras.Sequential([
         keras.layers.Input(shape=(X_train.shape[1],)),  # Define input shape explicitly
