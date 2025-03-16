@@ -105,16 +105,21 @@ def generate_cw_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.Dat
     Args:
         classifier (TensorFlowV2Classifier): The ART model to attack.
         X (DataFrame): The features to modify.
-        target_label (Array, optional): The one-hot encoded label the model should predict after the attack, e.g. [0, 1] for 'ATTACK'. If None, the attack is untargeted. Defaults to None.
+        target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
         
     Returns:
         DataFrame: The adversarial examples
     """
     attack_cw = CarliniL2Method(classifier=classifier, confidence=0.0, targeted=(target_label is not None))
 
+    # generate one-hot-encoded target labels
+    if target_label is not None:
+        target_array = np.zeros((X.shape[0], 2))
+        target_array[:, 0] = target_label # set desired predicted label
+
     # Generate adversarial examples
     X_np = X.to_numpy()
-    X_adv_cw = attack_cw.generate(x=X_np, y=target_label if target_label is not None else None)
+    X_adv_cw = attack_cw.generate(x=X_np, y=target_array if target_label is not None else None)
     X_adv_cw = pd.DataFrame(X_adv_cw, columns=X.columns)
     print(f'Adversarial C&W examples generated. Shape: {X_adv_cw.shape}')
 
@@ -128,7 +133,7 @@ def generate_cw_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, 
     Args:
         classifier (TensorFlowV2Classifier): The ART model to attack.
         X (DataFrame): The features to modify.
-        target_label (Array, optional): The one-hot encoded label the model should predict after the attack, e.g. [0, 1] for 'ATTACK'. If None, the attack is untargeted. Defaults to None.
+        target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
         num_cores (int, optional): The number of CPU cores to use for parallel processing. Defaults to 1.
 
     Returns:
@@ -145,7 +150,11 @@ def generate_cw_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, 
     X_np = X.to_numpy()
     # generate batches for parallel processing
     X_batches = split_into_batches(X_np, num_cores)
-    target_batches = split_into_batches(target_label, num_cores) if target_label is not None else None
+    # generate one-hot-encoded target labels
+    if target_label is not None:
+        target_array = np.zeros((X.shape[0], 2))
+        target_array[:, 0] = target_label # set desired predicted label
+    target_batches = split_into_batches(target_array, num_cores) if target_label is not None else None
 
     # Start parallel processing
     with multiprocessing.Pool(processes=num_cores, initializer=init_parallel_process, initargs=(classifier,)) as pool:
@@ -168,7 +177,7 @@ def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.D
     Args:
         classifier (TensorFlowV2Classifier): The ART model to attack.
         X (DataFrame): The features to modify.
-        target_label (Array, optional): The one-hot encoded label the model should predict after the attack, e.g. [0, 1] for 'ATTACK'. If None, the attack is untargeted. Defaults to None.
+        target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
         
     Returns:
         DataFrame: The adversarial examples
@@ -176,9 +185,14 @@ def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.D
     attack_fgsm = FastGradientMethod(estimator=classifier, eps=0.1, targeted=(target_label is not None)) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
     # the higher the epsilon, the easier it will be detected
 
+    # generate one-hot-encoded target labels
+    if target_label is not None:
+        target_array = np.zeros((X.shape[0], 2))
+        target_array[:, 0] = target_label # set desired predicted label
+
     # Generate adversarial examples
     X_np = X.to_numpy()
-    X_adv_fgsm = attack_fgsm.generate(x=X_np, y=target_label if target_label is not None else None)
+    X_adv_fgsm = attack_fgsm.generate(x=X_np, y=target_array if target_label is not None else None)
     X_adv_fgsm = pd.DataFrame(X_adv_fgsm, columns=X.columns)
     print(f'Adversarial FGSM examples generated. Shape: {X_adv_fgsm.shape}')
 
