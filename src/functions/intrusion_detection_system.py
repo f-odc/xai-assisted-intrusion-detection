@@ -90,20 +90,21 @@ def create_model(X_train, y_train):
     return model
 
 
-def predict(model, X_test: pd.DataFrame) -> pd.Series:
+def predict(model, X: pd.DataFrame, columns) -> pd.DataFrame:
     """
-    Predicts the labels of the test data using the model.
+    Predicts the labels of the data using the model.
     
     Args:
         model (Sequential): The trained Keras sequential model.
-        X_test (DataFrame): The test features.
+        X (DataFrame): The features.
+        columns (list): The columns for the output DataFrame.
         
     Returns:
-        pd.Series: The predicted labels with the same index as the test data.
+        pd.DataFrame: The predicted labels in a DataFrame with the same columns and indices as the input data.
     """
-    y_pred = model.predict(X_test)
-    y_pred = y_pred.argmin(axis=1)
-    return pd.Series(y_pred, index=X_test.index)
+    y_pred = model.predict(X)
+    y_pred = (y_pred > 0.5)
+    return pd.DataFrame(y_pred, columns=columns, index=X.index)
 
 
 def evaluate_model(y_pred, y_test: pd.DataFrame):
