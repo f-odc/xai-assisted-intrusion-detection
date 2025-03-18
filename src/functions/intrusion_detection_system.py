@@ -4,6 +4,7 @@ intrusion_detection_system: This module contains functions for building an intru
 Functions:
 - build_intrusion_detection_system: Builds an intrusion detection system using a deep neural network.
 - create_model: Creates a deep neural network model for intrusion detection.
+- predict: Predicts the labels of the test data using the model.
 - evaluate_model: Evaluates the model using the predicted and actual labels.
 
 Usage:
@@ -17,8 +18,7 @@ import setuptools.dist # needed to avoid error
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow import keras
-from sklearn.metrics import classification_report
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report, accuracy_score
 import numpy as np
 import pandas as pd
 import os
@@ -88,6 +88,22 @@ def create_model(X_train, y_train):
     # compile the keras model
     model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
     return model
+
+
+def predict(model, X_test: pd.DataFrame) -> pd.Series:
+    """
+    Predicts the labels of the test data using the model.
+    
+    Args:
+        model (Sequential): The trained Keras sequential model.
+        X_test (DataFrame): The test features.
+        
+    Returns:
+        pd.Series: The predicted labels with the same index as the test data.
+    """
+    y_pred = model.predict(X_test)
+    y_pred = y_pred.argmin(axis=1)
+    return pd.Series(y_pred, index=X_test.index)
 
 
 def evaluate_model(y_pred, y_test: pd.DataFrame):
