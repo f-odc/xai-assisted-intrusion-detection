@@ -71,7 +71,7 @@ def convert_to_art_model(model, X_train):
     return classifier
 
 
-def evaluate_art_model(model, X_test, y_test) -> np.ndarray:
+def evaluate_art_model(model, X_test:pd.DataFrame, y_test) -> pd.Series:
     """
     Evaluates an ART model on a test set. Prints the accuracy, classification report, and true/false positives/negatives.
     
@@ -83,18 +83,19 @@ def evaluate_art_model(model, X_test, y_test) -> np.ndarray:
     Returns:
         np.ndarray: The model's predictions.
     """
-    # Predict
+    # Predict and Convert to binary
     y_pred = model.predict(X_test)
-    y_pred = (y_pred > 0.5)
     y_test_binary = np.array(y_test).argmin(axis=1)
     y_pred_binary = np.array(y_pred).argmin(axis=1)
     # Evaluate
-    accuracy = accuracy_score(y_test, y_pred)
+    accuracy = accuracy_score(y_test_binary, y_pred_binary)
     print(f"Accuracy: {accuracy*100:.2f}%")
-    print(classification_report(y_test, y_pred, target_names=y_test.columns))
+    print(classification_report(y_test_binary, y_pred_binary, target_names=y_test.columns))
     print("Confusion Matrix: Positive == BENIGN")
     tn, fp, fn, tp = confusion_matrix(y_test_binary, y_pred_binary).ravel()
     print(f"TN: {tn}, FP: {fp}, FN: {fn}, TP: {tp}")
+    # Convert to Pandas Series with the same indices as X
+    y_pred = pd.Series(y_pred_binary, index=X_test.index)
     return y_pred
 
 
@@ -165,8 +166,9 @@ def generate_cw_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, 
 
     # Merge results back into a single NumPy array
     X_adv_cw = np.vstack(results)
-    
-    X_adv_cw = pd.DataFrame(X_adv_cw, columns=X.columns)
+    # Create new DataFrame with old indices and column names    
+    X_adv_cw = pd.DataFrame(X_adv_cw, columns=X.columns, index=X.index)
+
     return X_adv_cw
 
 

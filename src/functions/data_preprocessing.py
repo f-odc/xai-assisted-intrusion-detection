@@ -192,9 +192,8 @@ def sample_balanced_data(df, sample_size, random_state) -> tuple[pd.DataFrame, n
     """
     print("--- Sampling balanced data ---")
     # for each label in label_names sample sample_size rows
-    df = df.groupby(' Label', group_keys=False).apply(lambda x: x.sample(sample_size, random_state=random_state))#.reset_index(drop=True)
+    df = df.groupby(' Label', group_keys=False).apply(lambda x: x.sample(sample_size, random_state=random_state)) # use indices from the original dataset
     used_indices = df.index
-    df = df.reset_index(drop=True)
     print(f"Sample to shape: {df.shape}")
     return df, used_indices
 

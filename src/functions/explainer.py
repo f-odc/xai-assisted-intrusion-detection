@@ -65,7 +65,7 @@ def generate_shap_values(shap_explainer, X:pd.DataFrame) -> pd.DataFrame:
     """
     shap_values = shap_explainer(X)
     shap_values = shap_values[:, :, 0]
-    shap_values_df = pd.DataFrame(shap_values.values, columns=X.columns)
+    shap_values_df = pd.DataFrame(shap_values.values, columns=X.columns, index=X.index)
     return shap_values, shap_values_df
 
 
