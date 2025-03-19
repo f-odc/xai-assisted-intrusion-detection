@@ -4,7 +4,7 @@
 | -------------------- | -------------------- |
 | *Labels*             | `['BENIGN', 'DDoS']` |
 | *Normalization*      | `Min-Max`            |
-| *Sample Size*        | `10.000`               |
+| *Sample Size*        | `20.000`               |
 | *Adversarial Attack* | `C&W`               |
 | *Explanations*       | `SHAP`               |
 | *Detector*           | `Detect misclassified Samples`|
@@ -25,7 +25,7 @@ Unlike the previous prototypes, we do not look at all explanations, but focus on
 
 ## Dataset
 
-We create a balanced dataset consists only of *BENIGN* and *DDoS* samples.  We randomly select `10000` samples of each class.
+We create a balanced dataset consists only of *BENIGN* and *DDoS* samples.  We randomly select `10000` samples of each class. To create our *test* and *train* set, we use this time a *train-test-split* of `0.1`.
 
 | BENIGN | DDoS  |      |
 | ------ | ----- | ---- |
@@ -107,9 +107,4 @@ For false negative, we also have to combine two observations. `FP1` is calculate
 
 ## Results
 
-- TP: `399`
-- FN: `1`
-- TN: `396`
-- FP: `4`
-
-Accuracy: `99.37%`
+![Evaluation Results](images/delta/results.png)
