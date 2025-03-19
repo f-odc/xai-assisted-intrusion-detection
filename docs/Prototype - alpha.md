@@ -7,6 +7,7 @@
 | *Sample Size*        | `4000`               |
 | *Adversarial Attack* | `FGSM`               |
 | *Explanations*       | `SHAP`               |
+| *Detector*           | `Detect Adversarial Samples` |
 
 The data distribution of the *CICIDS2017* dataset is not balanced. We have a lot of attack classes that are described by only a few samples:
 
