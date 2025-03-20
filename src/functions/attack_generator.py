@@ -71,7 +71,7 @@ def convert_to_art_model(model, X_train):
     return classifier
 
 
-def evaluate_art_model(model, X_test:pd.DataFrame, y_test) -> pd.Series:
+def evaluate_art_model(model, X_test:pd.DataFrame, y_test) -> pd.DataFrame:
     """
     Evaluates an ART model on a test set. Prints the accuracy, classification report, and true/false positives/negatives.
     
@@ -85,6 +85,7 @@ def evaluate_art_model(model, X_test:pd.DataFrame, y_test) -> pd.Series:
     """
     # Predict and Convert to binary
     y_pred = model.predict(X_test)
+    y_pred = (y_pred > 0.5)
     y_test_binary = np.array(y_test).argmin(axis=1)
     y_pred_binary = np.array(y_pred).argmin(axis=1)
     # Evaluate
@@ -94,8 +95,8 @@ def evaluate_art_model(model, X_test:pd.DataFrame, y_test) -> pd.Series:
     print("Confusion Matrix: Positive == BENIGN")
     tn, fp, fn, tp = confusion_matrix(y_test_binary, y_pred_binary).ravel()
     print(f"TN: {tn}, FP: {fp}, FN: {fn}, TP: {tp}")
-    # Convert to Pandas Series with the same indices as X
-    y_pred = pd.Series(y_pred_binary, index=X_test.index)
+    # Create DataFrame with the same columns and indices as y_test
+    y_pred = pd.DataFrame(y_pred, columns=y_test.columns, index=X_test.index)
     return y_pred
 
 
@@ -121,7 +122,7 @@ def generate_cw_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.Dat
     # Generate adversarial examples
     X_np = X.to_numpy()
     X_adv_cw = attack_cw.generate(x=X_np, y=target_array if target_label is not None else None)
-    X_adv_cw = pd.DataFrame(X_adv_cw, columns=X.columns)
+    X_adv_cw = pd.DataFrame(X_adv_cw, columns=X.columns, index=X.index)
     print(f'Adversarial C&W examples generated. Shape: {X_adv_cw.shape}')
 
     return X_adv_cw
@@ -195,7 +196,7 @@ def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.D
     # Generate adversarial examples
     X_np = X.to_numpy()
     X_adv_fgsm = attack_fgsm.generate(x=X_np, y=target_array if target_label is not None else None)
-    X_adv_fgsm = pd.DataFrame(X_adv_fgsm, columns=X.columns)
+    X_adv_fgsm = pd.DataFrame(X_adv_fgsm, columns=X.columns, index=X.index)
     print(f'Adversarial FGSM examples generated. Shape: {X_adv_fgsm.shape}')
 
     return X_adv_fgsm
