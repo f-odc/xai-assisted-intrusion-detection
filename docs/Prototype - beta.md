@@ -31,7 +31,7 @@ We split the dataset into *train* and *test* data with a `0.2` split ratio. We s
 
 At the end we receive an accuracy of `98%` in detecting *BENGIN* and *ATTACK* network traffic. This result is very similar to our Prototype *alpha* as only the number of samples differs. 
 
-![IDS result](images/beta_ids_acc.png)
+![IDS result](images/beta/ids_acc.png)
 
 --- 
 # Detector
@@ -41,11 +41,11 @@ We focus on the powerful and hard-to-detect **C&W** attack. His generation with 
 
 With the adversarial samples we decrease the prediction performance of our IDS to under **`75%`**
 
-![Attack result](images/beta_attack_results_cw.png)
+![Attack result](images/beta/attack_results_cw.png)
 
 The different data distribution from normal samples and *FGSM* adversarial samples are shown in the following image. As we can see, the changes in the raw data are very minimal.
 
-![Normal vs Adversarial data](images/beta_data_comparison.png)
+![Normal vs Adversarial data](images/beta/data_comparison.png)
 
 ## Explanations
 
@@ -53,11 +53,11 @@ We generate `8.000` explanations from normal samples (*X_test*) and `8.000` expl
 
 As we can see, the explanations from both classes differ more than the raw data but this time, the **differences are not so big**.
 
-![Normal vs Adversarial explanations](images/beta_explanations_differences.png)
+![Normal vs Adversarial explanations](images/beta/explanations_differences.png)
 
 Comparing **normal explanations** (left) with **adversarial explanations** (right) on ***BENIGN*** samples, we also observe that the changes in the explanations are very small between both classes.
 
-![Explanation Comparison](images/beta_explanations_concrete.png)
+![Explanation Comparison](images/beta/explanations_concrete.png)
 
 ## Detector Model
 
@@ -65,17 +65,15 @@ We build a dataset for our detector model by adding labels `[1, 0]` to the norma
 
 The detector model is trained with a train-test split ratio of `0.1` on the dataset and a train-validation split ratio of `0.2` on the *train* set. The model achieves a bad accuracy of only `60.56%` on the *test* set. **Our detector cannot detect C&W attacks!**
 
-![Detector train evaluation](images/beta_detector_results.png)
+![Detector train evaluation](images/beta/detector_results.png)
 
 ## Compare with Raw-Data Detector
 
-We build a detector that makes decision based on given raw data. This detector acts as a comparator to our proposed solution. We build the training dataset of this detector by adding labels `[1, 0]` to the normal raw data and `[0, 1]` to adversarial raw data. We compare its accuracy with our proposed detector to see the relevance. The comparison is displayed in the following figure:
-
-![Plot Raw vs Explanation Detector](images/)
+We build a detector that makes decision based on given raw data. This detector acts as a comparator to our proposed solution. We build the training dataset of this detector by adding labels `[1, 0]` to the normal raw data and `[0, 1]` to adversarial raw data. This detector also reaches an accuracy of `60.56%`, showing that our model does not improve a normal detection.
 
 ---
-# Improvements
+# Improvement Ideas:
 
 As we can see, our created setup is not applicable for the strong **C&W** attack. We need to adjust our setup. Here are some ideas:
 
-- Train only *BENIGN* explanations -> Learn False-Positive
+- Train only *BENIGN* explanations of samples that really misclassify the IDS (*C&W* have an accuracy of ~`70%` means that not all 'ATTACK' samples are misclassified) -> [Prototype *delta*](Prototype%20-%20delta.md)
