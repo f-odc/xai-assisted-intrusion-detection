@@ -7,6 +7,7 @@ Functions:
 - build_train_datasets: Build feature dataset and label dataset.
 - build_detector: Builds and trains a deep neural network to detect adversarial attacks. Evaluate the model using the test data.
 - create_dnn: Creates a deep neural network model.
+- predict: Predicts the labels of the data using the detector model.
 - evaluate_model: Evaluates the model using the predicted and actual labels.
 - plot_performance: Plots the performance of the dnn model during training.
 
@@ -150,6 +151,23 @@ def create_dnn(X_train:pd.DataFrame, y_train) -> keras.Sequential:
     # compile the keras model
     model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
     return model
+
+
+def predict(detector, X: pd.DataFrame, columns) -> pd.DataFrame:
+    """
+    Predicts the labels of the data using the detector model.
+    
+    Args:
+        detector: The trained Keras sequential model.
+        X (DataFrame): The test features.
+        columns (list): The columns for the output DataFrame.
+        
+    Returns:
+        pd.DataFrame: The predicted labels in a DataFrame with the same columns and indices as the input data.
+    """
+    y_pred = detector.predict(X)
+    y_pred = (y_pred > 0.5)
+    return pd.DataFrame(y_pred, columns=columns, index=X.index)
 
 
 def evaluate_model(y_pred, y_test:pd.DataFrame):
