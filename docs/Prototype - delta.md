@@ -18,7 +18,7 @@ We saw that the *C&W* attack results in a decreased IDS accuracy of `76%`
 
 ![Attack result](images/beta_attack_results_cw.png)
 
-Unlike the previous prototypes, we do not look at all explanations, but focus only on those that belong to **samples that have been misclassified due to the adversarial attack**. We ignore the cases in which adversarial attacks do not have any influence and do not change the IDS prediction. Because we operate a target attack on *BENIGN* samples to obfuscate our attacks, we have no *BENIGN* samples that are misclassified as an *ATTACK* due to adversarial perturbation.
+Unlike the previous prototypes, we do not look at all explanations, but focus only on those that belong to **samples that have been misclassified due to the adversarial attack**. We ignore the cases in which adversarial attacks do not have any influence and do not change the IDS prediction. Because we operate a target attack on *BENIGN* samples to obfuscate our attacks, we have no *BENIGN* samples that are misclassified as an *ATTACK* due to adversarial perturbation. We focus solely on misclassified *BENIGN* samples because if an IDS classified *BENIGN* traffic as malicious due to adversarial perturbation, no security problem will arise and therefore no countermeasure has to be implemented. **The task of our generated detector is to decide whether an explanation of a 'BENIGN' classified samples is really 'BENIGN' or misclassified due to an adversarial attack.**
 
 ---
 # Intrusion Detection System
@@ -108,3 +108,6 @@ For false negative, we also have to combine two observations. `FP1` is calculate
 ## Results
 
 ![Evaluation Results](images/delta/results.png)
+
+## TODO:
+- Evaluate Performance on normal Data
