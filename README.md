@@ -71,5 +71,6 @@ This project follows a structured workflow to build a **xai-assisted intrusion d
 
 ## 💡 Prototypes
 Here are all available prototypes:
-- [Prototype alpha](docs/Prototype%20-%20alpha.md): A simple binary adversarial detection.
-- [Prototype beta](docs/Prototype%20-%20beta.md): A C&W attack detector.
+- [Prototype alpha](docs/Prototype%20-%20alpha.md): Simple binary adversarial detection for detecting *FGSM* adversarial attacks - *Success*
+- [Prototype beta](docs/Prototype%20-%20beta.md): *C&W* attack detector - *Failed*
+- [Prototype delta](docs/Prototype%20-%20delta.md): Misclassified samples from *C&W* attack detector - *Success*
