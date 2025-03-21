@@ -16,7 +16,7 @@ Because our [Prototype *beta*](Prototype%20-%20beta.md) failed, we try out a dif
 
 We saw that the *C&W* attack results in a decreased IDS accuracy of `76%`
 
-![Attack result](images/beta_attack_results_cw.png)
+![Attack result](images/beta/attack_results_cw.png)
 
 Unlike the previous prototypes, we do not look at all explanations, but focus only on those that belong to **samples that have been misclassified due to the adversarial attack**. We ignore the cases in which adversarial attacks do not have any influence and do not change the IDS prediction. Because we operate a target attack on *BENIGN* samples to obfuscate our attacks, we have no *BENIGN* samples that are misclassified as an *ATTACK* due to adversarial perturbation. We focus solely on misclassified *BENIGN* samples because if an IDS classified *BENIGN* traffic as malicious due to adversarial perturbation, no security problem will arise and therefore no countermeasure has to be implemented. **The task of our generated detector is to decide whether an explanation of a 'BENIGN' classified samples is really 'BENIGN' or misclassified due to an adversarial attack.**
 
