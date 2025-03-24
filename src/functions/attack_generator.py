@@ -71,7 +71,7 @@ def convert_to_art_model(model, X_train):
     return classifier
 
 
-def evaluate_art_model(model, X_test:pd.DataFrame, y_test) -> pd.DataFrame:
+def evaluate_art_model(model, X_test:pd.DataFrame, y_test:pd.DataFrame) -> pd.DataFrame:
     """
     Evaluates an ART model on a test set. Prints the accuracy, classification report, and true/false positives/negatives.
     
@@ -91,7 +91,7 @@ def evaluate_art_model(model, X_test:pd.DataFrame, y_test) -> pd.DataFrame:
     # Evaluate
     accuracy = accuracy_score(y_test_binary, y_pred_binary)
     print(f"Accuracy: {accuracy*100:.2f}%")
-    print(classification_report(y_test_binary, y_pred_binary, target_names=y_test.columns))
+    print(classification_report(y_test_binary, y_pred_binary, target_names=y_test.columns[::-1], zero_division=0)) # Reverse target_names because classification_reports starts displaying the class 0 (ATTACK) and then 1 (BENIGN)
     print("Confusion Matrix: Positive == BENIGN")
     tn, fp, fn, tp = confusion_matrix(y_test_binary, y_pred_binary).ravel()
     print(f"TN: {tn}, FP: {fp}, FN: {fn}, TP: {tp}")
@@ -117,7 +117,7 @@ def generate_cw_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.Dat
     # generate one-hot-encoded target labels
     if target_label is not None:
         target_array = np.zeros((X.shape[0], 2))
-        target_array[:, 0] = target_label # set desired predicted label
+        target_array[:, 1 - target_label] = 1 # ensures that the array is [1, 0] for target_label=1 and [0, 1] for target_label=0
 
     # Generate adversarial examples
     X_np = X.to_numpy()
@@ -155,7 +155,7 @@ def generate_cw_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, 
     # generate one-hot-encoded target labels
     if target_label is not None:
         target_array = np.zeros((X.shape[0], 2))
-        target_array[:, 0] = target_label # set desired predicted label
+        target_array[:, 1 - target_label] = 1 # ensures that the array is [1, 0] for target_label=1 and [0, 1] for target_label=0
     target_batches = split_into_batches(target_array, num_cores) if target_label is not None else None
 
     # Start parallel processing
@@ -191,7 +191,7 @@ def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.D
     # generate one-hot-encoded target labels
     if target_label is not None:
         target_array = np.zeros((X.shape[0], 2))
-        target_array[:, 0] = target_label # set desired predicted label
+        target_array[:, 1 - target_label] = 1 # ensures that the array is [1, 0] for target_label=1 and [0, 1] for target_label=0
 
     # Generate adversarial examples
     X_np = X.to_numpy()
