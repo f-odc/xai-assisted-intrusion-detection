@@ -115,11 +115,11 @@ def evaluate_model(y_pred, y_test: pd.DataFrame):
         y_pred (DataFrame): The predicted labels.
         y_test (DataFrame): The actual labels.
     """
-    y_pred_classes = np.argmax(y_pred, axis=1)
-    y_test_classes = np.argmax(y_test.to_numpy(), axis=1)
+    y_pred_classes = np.array(y_pred).argmin(axis=1)
+    y_test_classes = np.array(y_test).argmin(axis=1)
 
     # print accuracy
     print(f"Global Accuracy: {accuracy_score(y_test_classes, y_pred_classes)*100:.2f}%")
 
     # precision, recall, f1-score
-    print(classification_report(y_test_classes, y_pred_classes, target_names=y_test.columns, zero_division=0))
+    print(classification_report(y_test_classes, y_pred_classes, target_names=['ATTACK', 'BENIGN'], zero_division=0))
