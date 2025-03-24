@@ -178,14 +178,14 @@ def evaluate_model(y_pred, y_test:pd.DataFrame):
         y_pred (DataFrame): The predicted labels.
         y_test (DataFrame): The actual labels.
     """
-    y_pred_classes = np.argmax(y_pred, axis=1)
-    y_test_classes = np.argmax(y_test, axis=1)
+    y_pred_classes = np.argmin(y_pred, axis=1)
+    y_test_classes = np.argmin(y_test, axis=1)
 
     # print accuracy
     print(f"Global Accuracy: {accuracy_score(y_test_classes, y_pred_classes)*100:.2f}%")
 
     # precision, recall, f1-score
-    print(classification_report(y_test_classes, y_pred_classes, target_names=y_test.columns, zero_division=0))
+    print(classification_report(y_test_classes, y_pred_classes, target_names=y_test.columns[::-1], zero_division=0))
 
     tn, fp, fn, tp = confusion_matrix(y_test_classes, y_pred_classes).ravel()
     print(f"True Negative Rate: {tn/(tn+fp)*100:.2f}%")
