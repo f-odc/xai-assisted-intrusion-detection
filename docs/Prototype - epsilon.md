@@ -14,7 +14,7 @@ We want to evaluate if our detector created in [Prototype *delta*](Prototype%20-
 ---
 # IDS & Detector
 
-We perform the exact same steps as described in [Prototype *delta*](Prototype%20-%20delta.md) to create an IDS and detector. We just use only `5000` samples from each class and create *FGSM* adversal samples and explanations.
+We perform the exact same steps as described in [Prototype *delta*](Prototype%20-%20delta.md) to create an IDS and detector. We just use only `5000` samples from each class and create *FGSM* adversarial samples and explanations.
 
 # Result
 
@@ -30,6 +30,7 @@ As we can see, our generated two-stage approach can not be used with the *FGSM* 
 - Train Detector on Normal and Adversarial Data
     - **Result:** Detection is possible with nearly `96%` accuracy
     - **Limitation:** We have to train the Detector with each Adversarial Attack (maybe even with every single version of an adversarial attack)
+    - **Prototype:** [Prototype *iota*](Prototype%20-%20iota.md)
 - Combine [Prototype *alpha*](Prototype%20-%20alpha.md) (detect adversarial attacks) and [Prototype *delta*](Prototype%20-%20delta.md) (detect misclassified *BENIGN* samples). So we use the first model to find adversarial attacks and the second one for more fine attacks to detect samples that are misclassified by an attack.
     - **Result:** Should work
     - **Limitation:** Bad comparability due to different evaluation techniques (how to evaluate the performance of such models?)
