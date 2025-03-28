@@ -7,6 +7,9 @@ Functions:
 - generate_cw_attacks: Generates Carlini & Wagner White-Box attacks on a model.
 - generate_cw_attacks_parallel: Generates Carlini & Wagner White-Box attacks on a model using parallel processing.
 - generate_fgsm_attacks: Generates Fast Gradient Sign Method White-Box attacks on a model.
+- generate_hsj_attacks_parallel: Generates HopSkipJump White-Box attacks on a model using parallel processing.
+- generate_jsma_attacks: Generates Jacobian Saliency Map Attack White-Box attacks on a model.
+- generate_pgd_attacks: Generates Projected Gradient Descent White-Box attacks on a model.
 
 Usage:
 ------
@@ -20,7 +23,7 @@ from art.estimators.classification import TensorFlowV2Classifier
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from art.attacks.evasion import CarliniL2Method, FastGradientMethod
+from art.attacks.evasion import CarliniL2Method, FastGradientMethod, HopSkipJump, SaliencyMapMethod, ProjectedGradientDescentTensorFlowV2
 import numpy as np
 import pandas as pd
 import os
@@ -91,7 +94,7 @@ def evaluate_art_model(model, X_test:pd.DataFrame, y_test:pd.DataFrame) -> pd.Da
     # Evaluate
     accuracy = accuracy_score(y_test_binary, y_pred_binary)
     print(f"Accuracy: {accuracy*100:.2f}%")
-    print(classification_report(y_test_binary, y_pred_binary, target_names=y_test.columns[::-1], zero_division=0)) # Reverse target_names because classification_reports starts displaying the class 0 (ATTACK) and then 1 (BENIGN)
+    print(classification_report(y_test_binary, y_pred_binary, target_names=y_test.columns[::-1], zero_division=0, digits=4)) # Reverse target_names because classification_reports starts displaying the class 0 (ATTACK) and then 1 (BENIGN)
     print("Confusion Matrix: Positive == BENIGN")
     tn, fp, fn, tp = confusion_matrix(y_test_binary, y_pred_binary).ravel()
     print(f"TN: {tn}, FP: {fp}, FN: {fn}, TP: {tp}")
@@ -202,6 +205,111 @@ def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.D
     return X_adv_fgsm
 
 
+def generate_hsj_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, num_cores=1) -> pd.DataFrame:
+    """
+    Generates HopSkipJump White-Box attacks on a model using parallel processing.
+
+    Args:
+        classifier (TensorFlowV2Classifier): The ART model to attack.
+        X (DataFrame): The features to modify.
+        target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
+        num_cores (int, optional): The number of CPU cores to use for parallel processing. Defaults to 1.
+
+    Returns:
+        DataFrame: The generated adversarial samples
+    """
+    print(f"Running attack using {num_cores} CPU cores...\n")
+
+    # Split data into `num_cores` equal parts
+    def split_into_batches(data, num_splits):
+        split_size = len(data) // num_splits
+        return [data[i * split_size: (i + 1) * split_size] for i in range(num_splits - 1)] + [data[(num_splits - 1) * split_size:]]
+
+    # convert X
+    X_np = X.to_numpy()
+    # generate batches for parallel processing
+    X_batches = split_into_batches(X_np, num_cores)
+    # generate one-hot-encoded target labels
+    if target_label is not None:
+        target_array = np.zeros((X.shape[0], 2))
+        target_array[:, 1 - target_label] = 1 # ensures that the array is [1, 0] for target_label=1 and [0, 1] for target_label=0
+    target_batches = split_into_batches(target_array, num_cores) if target_label is not None else None
+
+    # Start parallel processing
+    with multiprocessing.Pool(processes=num_cores, initializer=init_parallel_process, initargs=(classifier,)) as pool:
+        if target_label is None:
+            results = pool.map(generate_hsj_attack_batch, X_batches)
+        else:
+            results = pool.starmap(generate_hsj_attack_batch, zip(X_batches, target_batches))
+
+    # Merge results back into a single NumPy array
+    X_adv_hsj = np.vstack(results)
+    # Create new DataFrame with old indices and column names    
+    X_adv_hsj = pd.DataFrame(X_adv_hsj, columns=X.columns, index=X.index)
+    print(f'Adversarial HopSkipJump examples generated. Shape: {X_adv_hsj.shape}')
+
+    return X_adv_hsj
+
+
+def generate_jsma_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.DataFrame:
+    """
+    Generates Jacobian Saliency Map Attack White-Box attacks on a model.
+    
+    Args:
+        classifier (TensorFlowV2Classifier): The ART model to attack.
+        X (DataFrame): The features to modify.
+        target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
+        
+    Returns:
+        DataFrame: The adversarial examples
+    """
+    attack_jsma = SaliencyMapMethod(classifier=classifier)
+
+    # generate one-hot-encoded target labels
+    if target_label is not None:
+        target_array = np.zeros((X.shape[0], 2))
+        target_array[:, 1 - target_label] = 1 # ensures that the array is [1, 0] for target_label=1 and [0, 1] for target_label=0
+
+    # Generate adversarial examples
+    X_np = X.to_numpy()
+    X_adv_jsma = attack_jsma.generate(x=X_np, y=target_array if target_label is not None else None)
+    X_adv_jsma = pd.DataFrame(X_adv_jsma, columns=X.columns, index=X.index)
+    print(f'Adversarial JSMA examples generated. Shape: {X_adv_jsma.shape}')
+
+    return X_adv_jsma
+
+
+def generate_pgd_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.DataFrame:
+    """
+    Generates Projected Gradient Descent White-Box attacks on a model.
+    
+    Args:
+        classifier (TensorFlowV2Classifier): The ART model to attack.
+        X (DataFrame): The features to modify.
+        target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
+        
+    Returns:
+        DataFrame: The adversarial examples
+    """
+    attack_pgd = ProjectedGradientDescentTensorFlowV2(estimator=classifier, eps=0.1, targeted=(target_label is not None)) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
+
+    # generate one-hot-encoded target labels
+    if target_label is not None:
+        target_array = np.zeros((X.shape[0], 2))
+        target_array[:, 1 - target_label] = 1 # ensures that the array is [1, 0] for target_label=1 and [0, 1] for target_label=0
+
+    # Generate adversarial examples
+    X_np = X.to_numpy()
+    X_adv_pgd = attack_pgd.generate(x=X_np, y=target_array if target_label is not None else None)
+    X_adv_pgd = pd.DataFrame(X_adv_pgd, columns=X.columns, index=X.index)
+    print(f'Adversarial PGD examples generated. Shape: {X_adv_pgd.shape}')
+
+    return X_adv_pgd
+
+
+# --- internal functions for parallel processing ---
+
+
 def init_parallel_process(model):
     """
     Initializes a process with shared variables. Necessary for multiprocessing.
@@ -228,6 +336,26 @@ def generate_cw_attack_batch(batch, batch_target=None):
     print(f"Process {pid} is generating adversarial examples for batch of size {len(batch)} \n")
     # Create a new attack instance (ART objects may not be shared directly)
     attack = CarliniL2Method(classifier=classifier_shared, confidence=0.1, targeted=(batch_target is not None))
+    # Generate adversarial examples
+    adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None)
+    return adv_samples
+
+
+def generate_hsj_attack_batch(batch, batch_target=None):
+    """
+    Generates adversarial examples for a batch of samples using the HopSkipJump White-Box attack. Used in parallel processing.
+
+    Args:
+        batch (Array): The batch of samples to attack.
+        batch_target (Array, optional): The one-hot encoded label the model should predict after the attack. If None, the attack is untargeted. Defaults to None.
+
+    Returns:
+        Array: The adversarial modified batches.
+    """
+    pid = os.getpid()  # Get process ID for debugging
+    print(f"Process {pid} is generating adversarial examples for batch of size {len(batch)} \n")
+    # Create a new attack instance (ART objects may not be shared directly)
+    attack = HopSkipJump(classifier=classifier_shared, targeted=(batch_target is not None), norm=2, init_eval=10) # set init_eval to be less than the sample size of each batch
     # Generate adversarial examples
     adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None)
     return adv_samples
