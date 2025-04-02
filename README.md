@@ -75,3 +75,4 @@ Here are all available prototypes:
 - [Prototype beta](docs/Prototype%20-%20beta.md): *C&W* attack detector - *Failed*
 - [Prototype delta](docs/Prototype%20-%20delta.md): Misclassified samples from *C&W* attack detector - *Success*
 - [Prototype epsilon](docs/Prototype%20-%20epsilon.md): Misclassified samples from *FGSM* attack detector - *Failed*
+- [Prototype iota](docs/Prototype%20-%20iota.md): Misclassified samples detector on all White-Box attacks - *Success*
