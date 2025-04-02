@@ -10,7 +10,7 @@
 | *Detector*           | `Detect misclassified Samples of all White-Box Attacks`|
 
 
-In this Prototype we change our two detection classes due to the failure of [Prototype *epsilon*](Prototype%20-%20epsilon.md) in detecting *FGSM* attacks. Our detector now decides between **CORRECT BENIGN samples adversarial or not vs MISCLASSIFIED AS BENIGN samples due to adversarial attacks**. In [Prototype *epsilon*](Prototype%20-%20epsilon.md) we found out that the explanations of *correct BENIGN* and *misclassified BENIGN* of the *FGSM* adversarial attack are more similar together than the explanations of *correct BENIGN* from the *FGSM* attack and *correct BENIGN* from the normal traffic. Therefore, we made the change to find out the original label the samples have even after an adversarial attack. If a *BENIGN* sample is perturbed and still classified as *BENIGN* from the IDS, the attack is not strong and of no danger for our system. So our new class *CORRECT BENIGN* holds all samples that are not *ATTACK* but are misclassified as *BENIGN* by the IDS due to any adversarial attack. **-> We find out all samples that causes a misclassification!**
+In this Prototype we change our two detection classes due to the failure of [Prototype *epsilon*](Prototype%20-%20epsilon.md) in detecting *FGSM* attacks. Our detector now decides between **CORRECT BENIGN samples adversarial or not vs MISCLASSIFIED AS BENIGN samples due to adversarial attacks**. In [Prototype *epsilon*](Prototype%20-%20epsilon.md) we found out that the explanations of *correct BENIGN* and *misclassified BENIGN* of the *FGSM* adversarial attack are more similar together than the explanations of *correct BENIGN* from the *FGSM* attack and *correct BENIGN* from the normal traffic. Therefore, we made the change to find out the original label the samples have even after an adversarial attack. If a *BENIGN* sample is perturbed and still classified as *BENIGN* from the IDS, the attack is not strong and of no danger for our system. So our new class *CORRECT BENIGN* holds all samples that are not *ATTACK* but are misclassified as *BENIGN* by the IDS due to any adversarial attack. **⇾ We find out all samples that causes a misclassification!**
 
 We start by evaluating our new Prototype with the *FGSM* attack that was previously not successful classified.
 
@@ -38,7 +38,7 @@ This result is good but also not very great. In [Prototype *epsilon*](Prototype%
 
 We now extend our detector by adding other well-known White-Box adversarial attack in the form of *Carlini & Wagner (C&W)*, *Projected Gradient Descent (PGD)* and *Jacobian Saliency Map Attack (JSMA)*. 
 
-We sample out `20.000` *BENIGN* samples and `20.000` *ATTACK* (DDoS) samples. With this dataset we train our IDS that reaches an accuracy of over `99`%. We split this data into 5 evenly sized classes: *normal*, *fgsm*, *cw*, *pgd* and *jsma*. On this classes we generate the related adversarial attack and their explanations. The accuracy of the IDS prediction after the adversarial attack is `49,36`%, `76,42`%, `50`% and `50,98`% for the attacks *FGSM*, *C&W*, *PGD* and *JSMA* respectivly.
+We sample out `20.000` *BENIGN* samples and `20.000` *ATTACK* (DDoS) samples. With this dataset we train our IDS that reaches an accuracy of over `99`%. We split this data into 5 evenly sized classes: *normal*, *fgsm*, *cw*, *pgd* and *jsma*. On these classes we generate the related adversarial attack and their explanations. The accuracy of the IDS prediction after the adversarial attack is `49,36`%, `76,42`%, `50`% and `50,98`% for the attacks *FGSM*, *C&W*, *PGD* and *JSMA* respectively.
 
 ## Explanation Distribution
 
@@ -47,12 +47,22 @@ We sample out `20.000` *BENIGN* samples and `20.000` *ATTACK* (DDoS) samples. Wi
 
 ## Detector Result 
 
+As we can see, our detector increases the performance of the classification enormously compared with the accuracy after the attack. But we not quite reach the accuracy the IDS have before the attack occurs.
+
 ![Detector Result](images/iota/detector_result.png)
 
-# Discussion
+# Diagnosis
 
-We can see some good results especially for *JSMA* and *C&W* attacks. For the *PGD* attack we reach a relatively bad result. My hypothesis for this is: **Similar to the *FGSM* attack, the *PGD* changes all samples a lot, therefore dividing between correctly *BENIGN* and misclassified *BENIGN* samples is very hard.** To test this hypothesis we will look into the explanation distribution of both classes and see how much they change, we also compare these with the explanation distribution of the *FGSM* attack. Additionally, we will check whether the *PGD* attack can easily be detected as an adversarial attack. Based on our received results we can elaborate further.
+We observe strong results, particularly for the *JSMA* and *C&W* attacks. However, for the *PGD* attack, the performance is relatively moderate.
 
-## Diagnosis
+## Hypothesis
+
+**We believe this is due to the nature of the *PGD* attack, which, similar to *FGSM*, significantly alters all input samples. As a result, distinguishing correctly classified BENIGN samples from misclassified BENIGN samples becomes challenging.**
+
+To support this hypothesis, we use our [Prototype *alpha*](Prototype%20-%20alpha.md) to evaluate the detection rate of *PGD* attacks. Our prototype achieves a detection accuracy of `99.55`%, highlighting a substantial difference between adversarial and normal samples. We observe a similar pattern for the *FGSM* attack.
+
+Although these attacks are easily detected, the challenge lies in correctly classifying BENIGN samples—whether they remain correctly classified or become misclassified. This difficulty aligns with our hypothesis.
 
 ## Improvements
+
+Since we can detect adversarial samples with high accuracy, the safest approach is to eliminate all detected attacks rather than selectively removing only those that are misclassified as *BENIGN*. To achieve this, we need to develop a prototype capable of handling both scenarios, ensuring robustness against all adversarial attacks and maximizing security.
