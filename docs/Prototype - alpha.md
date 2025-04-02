@@ -37,7 +37,7 @@ We split the dataset into *train* and *test* data with a `0.2` split ratio:
 ```python
 X_train, X_test, y_train, y_test = train_test_split(feature_df, label_df, test_size=0.2, random_state=42)
 ```
-We split the *train* data once again in *train* and *validation* data. This data is used to train our IDS. On the *test* data we achieve an accuracy of over `98%` in detecting *BENGIN* and *ATTACK* network traffic.
+We split the *train* data once again in *train* and *validation* data. This data is used to train our IDS. On the *test* data we achieve an accuracy of over `98%` in detecting *BENIGN* and *ATTACK* network traffic.
 
 ![IDS result](images/alpha/ids_result.png)
 
