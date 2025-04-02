@@ -4,7 +4,7 @@
 | -------------------- | -------------------- |
 | *Labels*             | `['BENIGN', 'DDoS']` |
 | *Normalization*      | `Min-Max`            |
-| *Sample Size*        | `20.000`               |
+| *Sample Size*        | `40.000`               |
 | *Adversarial Attack* | `FGSM & C&W & PGD & JSMA`               |
 | *Explanations*       | `SHAP`               |
 | *Detector*           | `Detect misclassified Samples of all White-Box Attacks`|
