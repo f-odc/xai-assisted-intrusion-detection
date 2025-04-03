@@ -122,4 +122,4 @@ def evaluate_model(y_pred, y_test: pd.DataFrame):
     print(f"Global Accuracy: {accuracy_score(y_test_classes, y_pred_classes)*100:.2f}%")
 
     # precision, recall, f1-score
-    print(classification_report(y_test_classes, y_pred_classes, target_names=['ATTACK', 'BENIGN'], zero_division=0))
+    print(classification_report(y_test_classes, y_pred_classes, target_names=['ATTACK', 'BENIGN'], zero_division=0, digits=4))

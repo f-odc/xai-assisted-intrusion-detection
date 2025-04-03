@@ -144,12 +144,12 @@ def create_dnn(X_train:pd.DataFrame, y_train) -> keras.Sequential:
         keras.layers.Dropout(0.2), # TODO: test
         keras.layers.Dense(10, activation='relu'),  # Hidden layer
         keras.layers.Dropout(0.2), # TODO: test
-        keras.layers.Dense(y_train.shape[1], activation='softmax')  # Output layer with softmax for one-hot encoding
+        keras.layers.Dense(y_train.shape[1], activation='softmax')  # Output layer with softmax for one-hot encoding and explicit decision | sigmoid := allows multiple classes to be selected 
     ])
     # set learning rate
     opt = keras.optimizers.Adam(learning_rate=0.001)
     # compile the keras model
-    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy']) # TODO: categorical_crossentropy := if each sample belongs to exactly one class, binary_crossentropy := sample can belong to multiple classes
     return model
 
 
@@ -185,7 +185,7 @@ def evaluate_model(y_pred, y_test:pd.DataFrame):
     print(f"Global Accuracy: {accuracy_score(y_test_classes, y_pred_classes)*100:.2f}%")
 
     # precision, recall, f1-score
-    print(classification_report(y_test_classes, y_pred_classes, target_names=y_test.columns[::-1], zero_division=0))
+    print(classification_report(y_test_classes, y_pred_classes, target_names=y_test.columns[::-1], zero_division=0, digits=4))
 
     tn, fp, fn, tp = confusion_matrix(y_test_classes, y_pred_classes).ravel()
     print(f"True Negative Rate: {tn/(tn+fp)*100:.2f}%")
