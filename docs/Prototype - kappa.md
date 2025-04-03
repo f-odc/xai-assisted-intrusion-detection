@@ -82,13 +82,18 @@ In addition to classification performance, we want to evaluate how well our dete
 
 | **Class** | **Classified *FGSM* Samples** | **Classified *PGD* Samples** |
 | --- | --- | --- |
-| 'ADV CORRECT BENIGN' | `482` | `572` | 
-| 'ADV MISCLASSIFIED' | `517` | `427` |
-| 'CW MISCLASSIFIED' | `0`| `0` |
-| 'JSMA MISCLASSIFIED' | `0` | `0` |
-| 'CORRECT BENIGN' | `0` | `1` |
-| **Detection Rate** | **`100%`** | **`99.99%`** |
+| 'ADV CORRECT BENIGN' | `490` | `581` | 
+| 'ADV MISCLASSIFIED'  | `508` | `416` |
+| 'CW MISCLASSIFIED'   | `0`   | `0` |
+| 'JSMA MISCLASSIFIED' | `1`   | `0` |
+| 'CORRECT BENIGN'     | `1`   | `3` |
+| **Detection Rate** | **`99.8%`** | **`99.7%`** |
 
 
 ## Classification
 
+We perform the same steps for the classification as in [Prototype *iota* #Evaluation](Prototype%20-%20iota.md#Evaluation). The following shows our new results.
+
+![Classification Results](images/kappa/classification_result.png)
+
+We see that the performance is very similar to the result in [Prototype *iota*](Prototype%20-%20iota.md) despite having more prediction classes in the detector stage.
