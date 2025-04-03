@@ -47,9 +47,37 @@ We sample out `20.000` *BENIGN* samples and `20.000` *ATTACK* (DDoS) samples. Wi
 
 ## Detector Result 
 
-As we can see, our detector increases the performance of the classification enormously compared with the accuracy after the attack. But we not quite reach the accuracy the IDS have before the attack occurs.
+TODO: Run Detector and add results
+
+As we can see, our detector have a very high accuracy of `95.12%` in detecting *correct BENIGN* and *misclassified BENIGN*. With this accurate detector, we will calculate the overall accuracy of classifying *BENIGN* and *ATTACK* samples with or two-stage approach.
+
+## Evaluation
+
+Because we operate with two stages (IDS and detector), we have to combine both performance metrics into a single one.
+
+### TP, FP, TN, FN Calculation
+
+In the IDS stage, we classify samples to *BENIGN* and *ATTACK*. In this stage we can calculate *True Negative (TN)* and *False Negative (FN)* samples. We are not yet able to make statements about *BENIGN* (positive) predicted samples as these are forwarded to the detector. 
+- ***TN_IDS*** : IDS classifies *ATTACK* samples as *ATTACK*
+- ***FN_IDS*** : IDS classifies *BENIGN* samples as *ATTACK*
+
+In the detector stage, we can make assumptions about the positive and negative case because here, we decide whether a sample is *correctly BENIGN* (positive) or *misclassified BENIGN* (negative). In addition to *TN* and *FN*, we calculate *True Positive (TP)* and *False Positive (FP)* samples.
+- ***TP*** : Detector classifies *BENIGN* samples as correct *BENIGN*
+- ***FP*** : Detector classifies *ATTACK* samples as correct *BENIGN*
+- ***TN_DET*** : Detector classifies *ATTACK* samples as misclassified due to *ATTACK*
+- ***FN_DET*** : Detector classifies *BENIGN* samples as misclassified due to *ATTACK*
+
+We add the samples of *TN* and *FN* from both stages to receive the global amount.
+- ***TN*** : *TN_IDS* + *TN_DET*
+- ***FN*** : *FN_IDS* + *FN_DET*
+
+With these calculated *TP*, *FP*, *TN*, *FN* values, we generate a classification report to extract the accuracy, precision, recall and f1-score. These metrics are used to compare the effectiveness of our proposed model towards the four white-box adversarial attacks.
+
+### Classification Results
 
 ![Detector Result](images/iota/detector_result.png)
+
+As we can see, our two-stage approach increases the performance of the classification enormously compared with the accuracy after the attack. But we not quite reach the accuracy the IDS have before the attack occurs.
 
 # Diagnosis
 
