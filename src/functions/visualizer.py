@@ -3,7 +3,6 @@ This module contains functions for visualizing data and data distributions.
 
 Functions:
 - visualize_data_distribution: Visualizes the distribution of two datasets using PCA.
-- pca_visualization_side_by_side: Visualizes the distribution of two datasets using PCA side by side.
 
 Usage:
 ------
@@ -15,7 +14,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
 
-def visualize_data_distribution(data, data_label, target, target_label):
+def visualize_data_distribution(data, data_label, target, target_label, side_by_side=False):
     """
     Visualizes the distribution of two datasets using PCA.
     
@@ -24,10 +23,16 @@ def visualize_data_distribution(data, data_label, target, target_label):
         data_label (str): The description for the original data.
         target (np.array): The target data.
         target_label (str): The description for the target data.
+        side_by_side (bool): If True, plots the data side by side. Default is False. If False, plots the data on top of each other.
 
     Returns:
         None
     """
+    # if side_by_side
+    if side_by_side:
+        pca_visualization_side_by_side(data, data_label, target, target_label)
+        return
+    # else plot them on top of each other
     # Perform PCA with 2 components
     pca = PCA(n_components=2)
     data_pca = pca.fit_transform(data)      # Fit and transform original data
