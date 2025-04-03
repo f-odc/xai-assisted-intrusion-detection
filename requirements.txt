@@ -20,6 +20,7 @@ google-pasta==0.2.0
 grpcio==1.69.0
 h5py==3.12.1
 idna==3.10
+imageio==2.37.0
 ipykernel==6.29.5
 ipython==8.31.0
 ipywidgets==8.1.5
@@ -31,7 +32,9 @@ jupyter_core==5.7.2
 jupyterlab_widgets==3.0.13
 keras==3.8.0
 kiwisolver==1.4.8
+lazy_loader==0.4
 libclang==18.1.1
+lime==0.2.0.1
 llvmlite==0.44.0
 Markdown==3.7
 markdown-it-py==3.0.0
@@ -78,6 +81,7 @@ pytz==2024.2
 pyzmq==26.2.0
 requests==2.32.3
 rich==13.9.4
+scikit-image==0.25.2
 scikit-learn==1.6.0
 scipy==1.15.0
 setuptools==75.8.0
@@ -91,6 +95,7 @@ tensorboard-data-server==0.7.2
 tensorflow==2.18.0
 termcolor==2.5.0
 threadpoolctl==3.5.0
+tifffile==2025.2.18
 torch==2.5.1
 tornado==6.4.2
 tqdm==4.67.1
