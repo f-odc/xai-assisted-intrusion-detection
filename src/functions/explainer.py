@@ -60,13 +60,12 @@ def generate_shap_values(shap_explainer, X:pd.DataFrame) -> pd.DataFrame:
         X (DataFrame): The data to generate SHAP values for.
 
     Returns:
-        np.array: The generated explanations from the SHAP explainer.
-        DataFrame: Only the SHAP values as a DataFrame.
+        DataFrame: The generated SHAP values.
     """
     shap_values = shap_explainer(X)
     shap_values = shap_values[:, :, 0]
     shap_values_df = pd.DataFrame(shap_values.values, columns=X.columns, index=X.index)
-    return shap_values, shap_values_df
+    return shap_values_df
 
 
 def generate_lime_explanation(lime_explainer:LimeTabularExplainer, X, model, num:int = None):
