@@ -47,9 +47,9 @@ We sample out `20.000` *BENIGN* samples and `20.000` *ATTACK* (DDoS) samples. Wi
 
 ## Detector Result 
 
-TODO: Run Detector and add results
+![Detector Result](images/iota/detector_result.png)
 
-As we can see, our detector have a very high accuracy of `95.12%` in detecting *correct BENIGN* and *misclassified BENIGN*. With this accurate detector, we will calculate the overall accuracy of classifying *BENIGN* and *ATTACK* samples with or two-stage approach.
+As we can see, our detector have a very high accuracy of `97.10%` in detecting *correct BENIGN* and *misclassified BENIGN*. With this accurate detector, we will calculate the overall accuracy of classifying *BENIGN* and *ATTACK* samples with or two-stage approach.
 
 ## Evaluation
 
@@ -75,7 +75,7 @@ With these calculated *TP*, *FP*, *TN*, *FN* values, we generate a classificatio
 
 ### Classification Results
 
-![Detector Result](images/iota/detector_result.png)
+![Detector Result](images/iota/classification_result.png)
 
 As we can see, our two-stage approach increases the performance of the classification enormously compared with the accuracy after the attack. But we not quite reach the accuracy the IDS have before the attack occurs.
 
