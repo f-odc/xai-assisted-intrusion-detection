@@ -48,7 +48,7 @@ def build_dataset(label_names=None):
     df = combine_all_data_files()
     # Remove NaN and Infinity values
     df = remove_nan_values(df)
-    # Extract unwante labels
+    # Extract unwanted labels
     if label_names != None:
         df = extract_labels(df, label_names)
 
