@@ -4,7 +4,7 @@ This module contains functions to build and train a deep neural network to detec
 Functions:
 - create_min_max_normalizer: Creates a Min-Max normalizer fitted to the given DataFrame.
 - normalize_shap_values: Normalizes SHAP values using Min-Max normalization.
-- build_train_datasets: Build feature dataset and label dataset.
+- build_detector_dataset: Builds a dataset from given class samples while preserving the original indices. Each label is one-hot encoded.
 - build_detector: Builds and trains a deep neural network to detect adversarial attacks. Evaluate the model using the test data.
 - create_dnn: Creates a deep neural network model.
 - predict: Predicts the labels of the data using the detector model.
@@ -73,24 +73,39 @@ def normalize_shap_values(df: pd.DataFrame):
     return scaler.transform(df)
 
 
-def build_train_datasets(shap_values:pd.DataFrame, adv_shap_values:pd.DataFrame):
+def build_detector_dataset(class_samples):
     """
-    Build feature dataset and label dataset. Features include SHAP values generated from normal and adversarial samples. Labels include incicator whether the sample is normal or adversarial ([1, 0] for BENIGN, [0, 1] for ADVERSARIAL).
-
+    Builds a dataset from given class samples while preserving the original indices. Each label is one-hot encoded.
+    
     Args:
-        shap_values (pd.DataFrame): SHAP values generated from normal samples.
-        adv_shap_values (pd.DataFrame): SHAP values generated from adversarial samples.
-
+        class_samples (dict): Dictionary where keys are class names and values are DataFrames of samples.
+    
     Returns:
-        pd.DataFrame: Feature dataset.
-        pd.DataFrame: Label dataset.
+        X (pd.DataFrame): Feature matrix with original indices retained.
+        y (pd.DataFrame): One-hot encoded labels with corresponding indices.
     """
-    y_normal = np.array([[1, 0]] * shap_values.shape[0])  
-    y_adv = np.array([[0, 1]] * (adv_shap_values.shape[0]))
-    y = np.concatenate([y_normal, y_adv])
-    y = pd.DataFrame(y, columns=['BENIGN', 'ADVERSARIAL'])
-
-    X = pd.concat([shap_values, adv_shap_values])
+    X_list = []
+    y_list = []
+    class_labels = list(class_samples.keys())
+    num_classes = len(class_labels)
+    
+    for i, class_name in enumerate(class_labels):
+        samples = class_samples[class_name]
+        # Create one-hot encoding for the class
+        one_hot = np.zeros((samples.shape[0], num_classes))
+        one_hot[:, i] = 1  
+        
+        X_list.append(samples)
+        
+        # Convert one-hot encoding to DataFrame with matching indices
+        y_df = pd.DataFrame(one_hot, index=samples.index, columns=class_labels)
+        y_list.append(y_df)
+    
+    # Concatenate all selected samples
+    X = pd.concat(X_list, axis=0)
+    y = pd.concat(y_list, axis=0)
+    print(f"Generated dataset: X shape {X.shape}, y shape {y.shape}")
+    
     return X, y
 
 
@@ -112,14 +127,14 @@ def build_detector(X_train, y_train, X_test, y_test, plot_train_performance=Fals
     model = create_dnn(X_train, y_train)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     # Train
-    model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=100)
+    model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=20, batch_size=40)
     # plot performance
     if plot_train_performance:
         plot_performance(model.history)
     # Predict
     y_pred = model.predict(X_test)
     # Evaluate
-    evaluate_model(y_pred, y_test)
+    # evaluate_model(y_pred, y_test)
     return model
 
 
