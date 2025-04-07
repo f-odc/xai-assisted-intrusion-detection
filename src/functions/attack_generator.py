@@ -3,6 +3,7 @@ Generates adversarial samples using the ART library. Applicable for White- and B
 
 Functions:
 - convert_to_art_model: Converts a Keras model to an ART model.
+- split_into_attack_classes: Splits the dataset evenly into specified classes with given labels.
 - evaluate_art_model: Evaluates an ART model on a test set.
 - generate_cw_attacks: Generates Carlini & Wagner White-Box attacks on a model.
 - generate_cw_attacks_parallel: Generates Carlini & Wagner White-Box attacks on a model using parallel processing.
@@ -24,6 +25,7 @@ import tensorflow as tf
 from tensorflow import keras
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from art.attacks.evasion import CarliniL2Method, FastGradientMethod, HopSkipJump, SaliencyMapMethod, ProjectedGradientDescentTensorFlowV2
+from sklearn.utils import shuffle
 import numpy as np
 import pandas as pd
 import os
@@ -72,6 +74,35 @@ def convert_to_art_model(model, X_train):
         train_step=custom_train_step  # Use default training function
     )
     return classifier
+
+
+def split_into_attack_classes(X, y, class_labels):
+    """
+    Splits the dataset evenly into specified attack classes with given labels.
+
+    Args:
+        X (numpy.ndarray): The input samples.
+        y (numpy.ndarray): The labels.
+        class_labels (list of str): The names of the classes (e.g., ["normal", "cw", "fgsm", "hsj"]).
+
+    Returns:
+        dict: A dictionary where keys are class names and values are tuples (X_subset, y_subset).
+    """
+    num_classes = len(class_labels)
+    if len(X) % num_classes != 0:
+        raise ValueError("Number of samples must be evenly divisible by the number of classes.")
+    # Shuffle data to avoid biases
+    X, y = shuffle(X, y, random_state=42)
+    # Compute samples per class
+    num_samples_per_class = len(X) // num_classes
+    # Dictionary to store the split datasets
+    class_splits = {}
+    for i, label in enumerate(class_labels):
+        start = i * num_samples_per_class
+        end = (i + 1) * num_samples_per_class
+        class_splits[label] = (X[start:end], y[start:end])
+
+    return class_splits
 
 
 def evaluate_art_model(model, X_test:pd.DataFrame, y_test:pd.DataFrame) -> pd.DataFrame:
