@@ -97,11 +97,6 @@ def preprocess_data(df:pd.DataFrame, encoding_type: int, normalizer, zero_column
         ndarray: Used indices
     """
     print("-- Preprocessing data --")
-    # Sample data
-    if sample_size != None:
-        df, used_indices = sample_balanced_data(df, sample_size, random_sample_state)
-    else:
-        used_indices = df.index
     # Split data into labels and features
     label_df, feature_df = split_label_and_features(df)
     # Remove irrelevant features
@@ -112,6 +107,11 @@ def preprocess_data(df:pd.DataFrame, encoding_type: int, normalizer, zero_column
     elif encoding_type == 1: # multi-class-encoding
         label_df = multi_class_one_hot_label_encoding(label_df)
     else: raise ValueError("Invalid encoding type")
+    # Sample data
+    if sample_size != None:
+        label_df, feature_df, used_indices = sample_balanced_data(label_df, feature_df, sample_size, random_sample_state)
+    else:
+        used_indices = df.index
     # Normalize data
     feature_df = normalization(normalizer, feature_df)
     return feature_df, label_df, used_indices
@@ -177,9 +177,9 @@ def extract_labels(df, label_names):
     return extract_df
 
 
-def sample_balanced_data(df, sample_size, random_state) -> tuple[pd.DataFrame, np.ndarray]:
+def sample_balanced_data(labels, features, sample_size, random_state) -> tuple[pd.DataFrame, np.ndarray]:
     """
-    Samples a given number of rows from each label class to create a balanced dataset.
+    Samples a given number of rows from each label class to create a balanced dataset. Useful for imbalanced datasets.
 
     Args:
         df (DataFrame): The DataFrame from which to sample balanced data.
@@ -191,11 +191,20 @@ def sample_balanced_data(df, sample_size, random_state) -> tuple[pd.DataFrame, n
         ndarray: An array of used indices.
     """
     print("--- Sampling balanced data ---")
-    # for each label in label_names sample sample_size rows
-    df = df.groupby(' Label', group_keys=False).apply(lambda x: x.sample(sample_size, random_state=random_state)) # use indices from the original dataset
-    used_indices = df.index
-    print(f"Sample to shape: {df.shape}")
-    return df, used_indices
+    # Convert one-hot encoding to a single-label series (multi-class)
+    class_labels = labels.idxmax(axis=1)  # Get the class name for each row
+    # Create a new DataFrame that has the original indices and class labels
+    temp_df = pd.DataFrame({'Class': class_labels}, index=labels.index)
+    # Sample while maintaining alignment
+    sampled_indices = temp_df.groupby('Class', group_keys=False).apply(
+        lambda x: x.sample(min(len(x), sample_size), random_state=random_state)
+    ).index
+    # Select the sampled data from both DataFrames
+    sampled_labels = labels.loc[sampled_indices]
+    sampled_features = features.loc[sampled_indices]
+    print(f"Sample to shape: {sampled_features.shape}")
+    
+    return sampled_labels, sampled_features, sampled_indices
 
 
 def split_label_and_features(df):
