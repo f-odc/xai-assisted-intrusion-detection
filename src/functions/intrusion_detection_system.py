@@ -53,7 +53,7 @@ def build_intrusion_detection_system(X_train, y_train, X_test, y_test):
     model = create_model(X_train, y_train)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     # Train
-    model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=100)
+    model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=20, batch_size=40) # or epochs=10, batch_size=100
     # Predict
     y_pred = model.predict(X_test)
     # Evaluate
