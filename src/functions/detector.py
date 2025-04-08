@@ -6,6 +6,8 @@ Functions:
 - normalize_shap_values: Normalizes SHAP values using Min-Max normalization.
 - build_detector_dataset: Builds a dataset from given class samples while preserving the original indices. Each label is one-hot encoded.
 - build_detector: Builds and trains a deep neural network to detect adversarial attacks. Evaluate the model using the test data.
+- store: Stores the trained model in the specified directory.
+- load: Loads the trained model from the specified directory.
 - create_dnn: Creates a deep neural network model.
 - predict: Predicts the labels of the data using the detector model.
 - evaluate_model: Evaluates the model using the predicted and actual labels.
@@ -136,6 +138,30 @@ def build_detector(X_train, y_train, X_test, y_test, plot_train_performance=Fals
     # Evaluate
     # evaluate_model(y_pred, y_test)
     return model
+
+
+def store(model, name):
+    """
+    Stores the trained model in the specified directory.
+
+    Args:
+        model (Sequential): The trained Keras sequential model.
+        name (str): The name of the model file. Use the Prototype name.
+    """
+    model.save('../../CICIDS2017/models/detector-' + name +'.keras')
+
+
+def load(name):
+    """
+    Loads the trained model from the specified directory.
+
+    Args:
+        name (str): The name of the model file. Use the Prototype name.
+
+    Returns:
+        Sequential: The loaded Keras sequential model.
+    """
+    return keras.models.load_model('../../CICIDS2017/models/detector-' + name +'.keras')
 
 
 def create_dnn(X_train:pd.DataFrame, y_train) -> keras.Sequential:
