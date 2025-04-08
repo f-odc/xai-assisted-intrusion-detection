@@ -71,8 +71,10 @@ This project follows a structured workflow to build a **xai-assisted intrusion d
 
 ## 💡 Prototypes
 Here are all available prototypes:
-- [Prototype alpha](docs/Prototype%20-%20alpha.md): Simple binary adversarial detection for detecting *FGSM* adversarial attacks - *Success*
-- [Prototype beta](docs/Prototype%20-%20beta.md): *C&W* attack detector - *Failed*
-- [Prototype delta](docs/Prototype%20-%20delta.md): Misclassified samples from *C&W* attack detector - *Success*
-- [Prototype epsilon](docs/Prototype%20-%20epsilon.md): Misclassified samples from *FGSM* attack detector - *Failed*
-- [Prototype iota](docs/Prototype%20-%20iota.md): Misclassified samples detector on all White-Box attacks - *Success*
+- [Prototype *alpha*](docs/Prototype%20-%20alpha.md): Simple binary adversarial detection for detecting *FGSM* adversarial attacks - *Success*
+- [Prototype *beta*](docs/Prototype%20-%20beta.md): *C&W* attack detector - *Failed*
+- [Prototype *delta*](docs/Prototype%20-%20delta.md): Misclassified samples from *C&W* attack detector - *Success*
+- [Prototype *epsilon*](docs/Prototype%20-%20epsilon.md): Misclassified samples from *FGSM* attack detector - *Failed*
+- [Prototype *iota*](docs/Prototype%20-%20iota.md): Misclassified samples detector on all White-Box attacks - *Success*
+- [Prototype *kappa*](docs/Prototype%20-%20kappa.md): Adversarial Attack and misclassified samples detector on all White-Box attacks - *Success**
+- [Prototype *my*](docs/Prototype%20-%20my.md): Adversarial Attack and misclassified samples detector on all White-Box attacks **+** on whole dataset - *Success*
