@@ -3,6 +3,7 @@ A module for preprocessing raw CICIDS2017 data to create a well-suited dataset f
 
 Functions:
 - build_dataset: Builds a dataset from the CICIDS2017 data. Include only the specified labels.
+- build_nsl_kdd_dataset: Builds a dataset from the NSL-KDD data. Include only the specified labels.
 - generate_normalizer: Generates a normalizer for the given DataFrame.
 - preprocess_data: Preprocess a dataset to create a well-suited dataset for machine learning models.
 - combine_all_data_files: Combines all CSV files in the specified directory into a single DataFrame.
@@ -30,7 +31,7 @@ Usage:
 import pandas as pd
 import os
 import numpy as np
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
 
 
 def build_dataset(label_names=None):
@@ -53,6 +54,50 @@ def build_dataset(label_names=None):
         df = extract_labels(df, label_names)
 
     return df
+
+
+def build_nsl_kdd_dataset(label_names=None):
+    """
+    Builds a dataset from the NSL-KDD data. Include only the specified labels.
+
+    Args:
+        label_names (Array, optional): A array of column names to extract as labels e.g. ['normal', 'neptune']. If None, all labels will be used. Defaults to None.
+
+    Returns:
+        DataFrame: The generated NSL-KDD dataset.
+    """
+    print("-- Building NSL-KDD dataset --")
+    # Load NSL-KDD data
+    train_df = pd.read_csv('../../datasets/NSL-KDD/raw/KDDTrain+.txt', header=None)
+    test_df = pd.read_csv('../../datasets/NSL-KDD/raw/KDDTest+.txt', header=None)
+    column_names = [
+        "duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes", "land", "wrong_fragment", "urgent", "hot", "num_failed_logins",
+        "logged_in", "num_compromised", "root_shell", "su_attempted", "num_root", "num_file_creations", "num_shells", "num_access_files",
+        "num_outbound_cmds", "is_host_login", "is_guest_login", "count", "srv_count", "serror_rate", "srv_serror_rate", "rerror_rate",
+        "srv_rerror_rate", "same_srv_rate", "diff_srv_rate", "srv_diff_host_rate", "dst_host_count", "dst_host_srv_count", "dst_host_same_srv_rate",
+        "dst_host_diff_srv_rate", "dst_host_same_src_port_rate", "dst_host_srv_diff_host_rate", "dst_host_serror_rate",
+        "dst_host_srv_serror_rate", "dst_host_rerror_rate", "dst_host_srv_rerror_rate", " Label", "difficulty_level"
+    ]
+
+    # set column names
+    train_df.columns = column_names
+    test_df.columns = column_names
+    # drop difficulty level column
+    train_df.drop(columns=['difficulty_level'], inplace=True)
+    test_df.drop(columns=['difficulty_level'], inplace=True)
+    # Encode categorical features
+    categorical_cols = ['protocol_type', 'service', 'flag']
+    encoder = LabelEncoder()
+    for col in categorical_cols:
+        train_df[col] = encoder.fit_transform(train_df[col])
+        test_df[col] = encoder.transform(test_df[col])
+    # combine train and test data
+    dataset = pd.concat([train_df, test_df], ignore_index=True)
+    # Extract unwanted labels
+    if label_names != None:
+        dataset = extract_labels(dataset, label_names)
+
+    return dataset
 
 
 def generate_normalizer(df:pd.DataFrame, norm_type: int):
@@ -126,7 +171,7 @@ def combine_all_data_files():
     """
     print("--- Combining all CICIDS2017 files ---")
     # combine all CICIDS2017 files
-    path = '../../CICIDS2017/raw/'
+    path = '../../datasets/CICIDS2017/raw/'
     combined_df = pd.DataFrame()
     for file in os.listdir(path):
         if file.endswith('.csv'):
@@ -235,7 +280,7 @@ def binary_one_hot_label_encoding(df):
         DataFrame: The DataFrame with encoded labels. 'BENIGN' is [1, 0] and 'ATTACK' is [0, 1].
     """
     print("--- Encoding labels as binary one-hot values ---")
-    binary_label_df = df.apply(lambda x: 0 if x == 'BENIGN' else 1)
+    binary_label_df = df.apply(lambda x: 0 if (x == 'BENIGN' or x == 'normal') else 1) # use BENIGN and normal to be useable for CICIDS2017 and NSL-KDD
     binary_one_hot_label_df = pd.get_dummies(binary_label_df)
     binary_one_hot_label_df.columns = ['BENIGN', 'ATTACK']
     return binary_one_hot_label_df
