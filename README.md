@@ -18,22 +18,30 @@
 `pip install -r requirements.txt`
 4. Select *.env* as Kernel in Jupyter Notebook
 
-### Download Dataset
-Download CICIDS2017 Dataset:
+### Download Datasets
+- Download CICIDS2017 Dataset:
 https://www.kaggle.com/datasets/chethuhn/network-intrusion-dataset
+- Download NSL-KDD Dataset:
+https://www.kaggle.com/datasets/hassan06/nslkdd
 
 ### Store Dataset
-Store the files from the CICIDS2017 Dataset in the folder `CICIDS2017/raw/`. It should look like that:
+Store the files from the downloaded Datasets in the folder `datasets/CICIDS2017/raw/` and `datasets/NSL-KDD/raw` respectively. It should look like that:
 ```
 xai-assisted-intrusion-detection-system/
 │── README.md
-│...   
-│ ├── CICIDS2017/
-│ │ ├── raw/
-│ │ │ ├── Friday-WorkingHours-Afternoon-DDos.pcap_ISCX
-│ │ │ ├── Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX
-│ │ │ ├── Friday-WorkingHours-Morning.pcap_ISCX
-│ │ │ ├── ...
+│...
+│ ├── datasets/   
+| │ ├── CICIDS2017/
+| │ │ ├── raw/
+| │ │ │ ├── Friday-WorkingHours-Afternoon-DDos.pcap_ISCX
+| │ │ │ ├── Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX
+| │ │ │ ├── Friday-WorkingHours-Morning.pcap_ISCX
+| │ │ │ ├── ...
+| │ ├── NSL-KDD/
+| │ │ ├── raw/
+| │ │ │ ├── KDDTest+.txt
+| │ │ │ ├── KDDTrain+.txt
+| │ │ │ ├── ...
 ```
 
 ## 📂 Organization & Workflow  
@@ -76,5 +84,6 @@ Here are all available prototypes:
 - [Prototype *delta*](docs/Prototype%20-%20delta.md): Misclassified samples from *C&W* attack detector - *Success*
 - [Prototype *epsilon*](docs/Prototype%20-%20epsilon.md): Misclassified samples from *FGSM* attack detector - *Failed*
 - [Prototype *iota*](docs/Prototype%20-%20iota.md): Misclassified samples detector on all White-Box attacks - *Success*
-- [Prototype *kappa*](docs/Prototype%20-%20kappa.md): Adversarial Attack and misclassified samples detector on all White-Box attacks - *Success**
-- [Prototype *my*](docs/Prototype%20-%20my.md): Adversarial Attack and misclassified samples detector on all White-Box attacks **+** on whole dataset - *Success*
+- [Prototype *kappa*](docs/Prototype%20-%20kappa.md): Adversarial Attack and misclassified samples detector on all White-Box attacks - *Success*
+- [Prototype *my*](docs/Prototype%20-%20my.md): Use whole dataset for the evaluation of the previous detector - *Success*
+- [Prototype *ny*](docs/Prototype%20-%20ny.md): Evaluation of detector on new *NSL-KDD* dataset - *Success*
