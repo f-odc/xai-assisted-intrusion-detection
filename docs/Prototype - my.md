@@ -66,6 +66,30 @@ In addition to classification performance, we want to evaluate how well our dete
 | **Detection Rate** | **`100%`** | **`100%`** |
 
 
+## Attacker Success Rate & True Benign Rate
+
+To elaborate our result further, we want to calculate the **attacker success rate** and the **true benign rate**. We will accept all samples that the detector classifies into 'CORRECT BENIGN' and dismiss all other samples as they are detected as adversarial. For the calculation, we define the following two terms: 
+- **ATTACK**: *ATTACK* sample that gets misclassified through an adversarial attack as *BENIGN* 
+- **BENIGN**: *BENIGN* sample
 
 
+| **Class** | ***FGSM* Attack** | ***PGD* Attack** | ***JSMA* Attack** | ***C&W* Attack** |
+| --- | --- | --- | --- | --- |
+| **#Samples**              | `500`      | `500` | `500` | `244` |
+| 'ADV CORRECT BENIGN'      | `452`      | `72`  | `0`   | `0` |
+| 'ADV MISCLASSIFIED'       | `0`        | `427` | `0`   | `0` |
+| 'CW MISCLASSIFIED'        | `0`        | `0`   | `3`   | `230` | 
+| 'JSMA MISCLASSIFIED'      | `0`        | `0`   | `493` | `0` |
+| 'CORRECT BENIGN'          | `0`        | `0`   | `4`   | `14` |
+| **Attacker Success Rate** | **`0/500 = 0%`** | **`0/500 = 0%`** | **`4/500 = 0.8%`** | **`14/244 = 5.74%`** |
 
+| **Class** | ***Normal* Benign** | 
+| --- | --- |
+| **#Samples**               | `500`      | 
+| 'IDS CLASSIFIES AS ATTACK' | `14`
+| 'ADV CORRECT BENIGN'       | `0`      |
+| 'ADV MISCLASSIFIED'        | `0`        | 
+| 'CW MISCLASSIFIED'         | `2`        | 
+| 'JSMA MISCLASSIFIED'       | `1`        | 
+| 'CORRECT BENIGN'           | `482`        | 
+| **True Benign Rate**       | **`482/500 = 96.4%`** |
