@@ -148,7 +148,8 @@ def store(model, name):
         model (Sequential): The trained Keras sequential model.
         name (str): The name of the model file. Use the Prototype name.
     """
-    model.save('../../CICIDS2017/models/detector-' + name +'.keras')
+    #os.makedirs('../../CICIDS2017/models', exist_ok=True)
+    model.save('../../datasets/CICIDS2017/models/detector-' + name +'.keras')
 
 
 def load(name):
