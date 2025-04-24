@@ -162,7 +162,7 @@ def load(name):
     Returns:
         Sequential: The loaded Keras sequential model.
     """
-    return keras.models.load_model('../../CICIDS2017/models/detector-' + name +'.keras')
+    return keras.models.load_model('../../datasets/CICIDS2017/models/detector-' + name +'.keras')
 
 
 def create_dnn(X_train:pd.DataFrame, y_train) -> keras.Sequential:
