@@ -87,3 +87,4 @@ Here are all available prototypes:
 - [Prototype *kappa*](docs/Prototype%20-%20kappa.md): Adversarial Attack and misclassified samples detector on all White-Box attacks - *Success*
 - [Prototype *my*](docs/Prototype%20-%20my.md): Use whole dataset for the evaluation of the previous detector - *Success*
 - [Prototype *ny*](docs/Prototype%20-%20ny.md): Evaluation of detector on new *NSL-KDD* dataset - *Success*
+- [Prototype *omikron*](docs/Prototype%20-%20omikron.md): Include Black-Box Attacks - *Success*

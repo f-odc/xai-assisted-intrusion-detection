@@ -44,7 +44,7 @@ We use the same classes as in the previous [Prototype *my*](Prototype%20-%20my.m
 | 'ADV MISCLASSIFIED'     | `7.429`    | `Misclassified BENIGN - FGSM & PGD      ` |
 | 'CW MISCLASSIFIED'      | `762`     | `Misclassified BENIGN - CW              ` |
 | 'JSMA MISCLASSIFIED'    | `4.452`     | `Misclassified BENIGN - JSMA            ` |
-| 'CORRECT BENIGN'        | `13.263`    | `Correct BENIGN       - Normal & CS & JSMA` |
+| 'CORRECT BENIGN'        | `13.263`    | `Correct BENIGN       - Normal & CW & JSMA` |
 
 We can observe that we train with a relative low number of *Misclassified BENIGN - CW* samples. That is why the *C&W* attack is not very powerful on this dataset. The attack results in an accuracy of `90.73%`, meaning only a decrease of `8%` in accuracy was issued by the attack. For the other attacks, the performance was very similar as for the *CICIDS2017* dataset.
 
