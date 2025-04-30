@@ -165,7 +165,7 @@ def generate_cw_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.Dat
     return X_adv_cw
 
 
-def generate_cw_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, num_cores=1) -> pd.DataFrame:
+def generate_cw_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, num_cores=1, feature_mask=None) -> pd.DataFrame:
     """
     Generates Carlini & Wagner White-Box attacks on a model using parallel processing.
 
@@ -174,6 +174,7 @@ def generate_cw_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, 
         X (DataFrame): The features to modify.
         target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
         num_cores (int, optional): The number of CPU cores to use for parallel processing. Defaults to 1.
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify e.g.: [1, 0, 0, 1]. Only the features with a value of 1 will be modified. Defaults to None. If None, all features will be modified.
 
     Returns:
         DataFrame: The generated adversarial samples
@@ -197,10 +198,10 @@ def generate_cw_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, 
 
     # Start parallel processing
     with multiprocessing.Pool(processes=num_cores, initializer=init_parallel_process, initargs=(classifier,)) as pool:
-        if target_label is None:
-            results = pool.map(generate_cw_attack_batch, X_batches)
-        else:
-            results = pool.starmap(generate_cw_attack_batch, zip(X_batches, target_batches))
+        results = pool.starmap(generate_cw_attack_batch, zip(
+            X_batches, 
+            target_batches if target_batches is not None else [None] * len(X_batches), # None in zip is not allowed so we generate a None list which is identified as None in the called function
+            feature_mask if feature_mask is not None else [None] * len(X_batches)))
 
     # Merge results back into a single NumPy array
     X_adv_cw = np.vstack(results)
@@ -210,7 +211,7 @@ def generate_cw_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, 
     return X_adv_cw
 
 
-def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.DataFrame:
+def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None, feature_mask=None) -> pd.DataFrame:
     """
     Generates Fast Gradient Sign Method Whote-Box attacks on a model.
     
@@ -218,11 +219,12 @@ def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.D
         classifier (TensorFlowV2Classifier): The ART model to attack.
         X (DataFrame): The features to modify.
         target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify e.g.: [1, 0, 0, 1]. Only the features with a value of 1 will be modified. Defaults to None. If None, all features will be modified.
         
     Returns:
         DataFrame: The adversarial examples
     """
-    attack_fgsm = FastGradientMethod(estimator=classifier, eps=0.1, targeted=(target_label is not None)) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
+    attack_fgsm = FastGradientMethod(estimator=classifier, eps=0.15, targeted=(target_label is not None)) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
     # the higher the epsilon, the easier it will be detected
 
     # generate one-hot-encoded target labels
@@ -232,7 +234,7 @@ def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.D
 
     # Generate adversarial examples
     X_np = X.to_numpy()
-    X_adv_fgsm = attack_fgsm.generate(x=X_np, y=target_array if target_label is not None else None)
+    X_adv_fgsm = attack_fgsm.generate(x=X_np, y=target_array if target_label is not None else None, mask=feature_mask)
     X_adv_fgsm = pd.DataFrame(X_adv_fgsm, columns=X.columns, index=X.index)
     print(f'Adversarial FGSM examples generated. Shape: {X_adv_fgsm.shape}')
 
@@ -285,7 +287,7 @@ def generate_hsj_attacks_parallel(classifier, X:pd.DataFrame, target_label=None,
     return X_adv_hsj
 
 
-def generate_jsma_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.DataFrame:
+def generate_jsma_attacks(classifier, X:pd.DataFrame, target_label=None, feature_mask=None) -> pd.DataFrame:
     """
     Generates Jacobian Saliency Map Attack White-Box attacks on a model.
     
@@ -293,11 +295,12 @@ def generate_jsma_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.D
         classifier (TensorFlowV2Classifier): The ART model to attack.
         X (DataFrame): The features to modify.
         target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify e.g.: [1, 0, 0, 1]. Only the features with a value of 1 will be modified. Defaults to None. If None, all features will be modified.
         
     Returns:
         DataFrame: The adversarial examples
     """
-    attack_jsma = SaliencyMapMethod(classifier=classifier)
+    attack_jsma = SaliencyMapMethod(classifier=classifier, theta=0.1, gamma=0.8)
 
     # generate one-hot-encoded target labels
     if target_label is not None:
@@ -306,14 +309,14 @@ def generate_jsma_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.D
 
     # Generate adversarial examples
     X_np = X.to_numpy()
-    X_adv_jsma = attack_jsma.generate(x=X_np, y=target_array if target_label is not None else None)
+    X_adv_jsma = attack_jsma.generate(x=X_np, y=target_array if target_label is not None else None, mask=feature_mask)
     X_adv_jsma = pd.DataFrame(X_adv_jsma, columns=X.columns, index=X.index)
     print(f'Adversarial JSMA examples generated. Shape: {X_adv_jsma.shape}')
 
     return X_adv_jsma
 
 
-def generate_pgd_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.DataFrame:
+def generate_pgd_attacks(classifier, X:pd.DataFrame, target_label=None, feature_mask=None) -> pd.DataFrame:
     """
     Generates Projected Gradient Descent White-Box attacks on a model.
     
@@ -321,11 +324,12 @@ def generate_pgd_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.Da
         classifier (TensorFlowV2Classifier): The ART model to attack.
         X (DataFrame): The features to modify.
         target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify e.g.: [1, 0, 0, 1]. Only the features with a value of 1 will be modified. Defaults to None. If None, all features will be modified.
         
     Returns:
         DataFrame: The adversarial examples
     """
-    attack_pgd = ProjectedGradientDescentTensorFlowV2(estimator=classifier, eps=0.1, targeted=(target_label is not None)) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
+    attack_pgd = ProjectedGradientDescentTensorFlowV2(estimator=classifier, eps=0.1, targeted=(target_label is not None), batch_size=32, max_iter=10) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
 
     # generate one-hot-encoded target labels
     if target_label is not None:
@@ -334,7 +338,7 @@ def generate_pgd_attacks(classifier, X:pd.DataFrame, target_label=None) -> pd.Da
 
     # Generate adversarial examples
     X_np = X.to_numpy()
-    X_adv_pgd = attack_pgd.generate(x=X_np, y=target_array if target_label is not None else None)
+    X_adv_pgd = attack_pgd.generate(x=X_np, y=target_array if target_label is not None else None, mask=feature_mask)
     X_adv_pgd = pd.DataFrame(X_adv_pgd, columns=X.columns, index=X.index)
     print(f'Adversarial PGD examples generated. Shape: {X_adv_pgd.shape}')
 
@@ -378,18 +382,6 @@ def generate_boundary_attacks_parallel(classifier, X:pd.DataFrame, target_label=
         else:
             results = pool.starmap(generate_boundary_attack_batch, zip(X_batches, target_batches))
 
-    # import multiprocessing
-
-    # # Use 'spawn' context for safer multiprocessing
-    # ctx = multiprocessing.get_context("spawn")
-
-    # with ctx.Pool(processes=num_cores, initializer=init_parallel_process, initargs=(classifier,)) as pool:
-    #     if target_label is None:
-    #         results = pool.map(generate_boundary_attack_batch, X_batches)
-    #     else:
-    #         results = pool.starmap(generate_boundary_attack_batch, zip(X_batches, target_batches))
-
-
     # Merge results back into a single NumPy array
     X_adv_boundary = np.vstack(results)
     # Create new DataFrame with old indices and column names    
@@ -413,14 +405,15 @@ def init_parallel_process(model):
     classifier_shared = model
 
 
-def generate_cw_attack_batch(batch, batch_target=None):
+def generate_cw_attack_batch(batch, batch_target=None, feature_mask=None):
     """
     Generates adversarial examples for a batch of samples using the Carlini & Wagner White-Box attack. Used in parallel processing.
 
     Args:
         batch (Array): The batch of samples to attack.
         batch_target (Array, optional): The one-hot encoded label the model should predict after the attack. If None, the attack is untargeted. Defaults to None.
-
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify. Defaults to None.
+        
     Returns:
         Array: The adversarial modified batches.
     """
@@ -429,7 +422,7 @@ def generate_cw_attack_batch(batch, batch_target=None):
     # Create a new attack instance (ART objects may not be shared directly)
     attack = CarliniL2Method(classifier=classifier_shared, confidence=0.1, targeted=(batch_target is not None))
     # Generate adversarial examples
-    adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None)
+    adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None, mask=feature_mask)
     return adv_samples
 
 
@@ -467,7 +460,7 @@ def generate_boundary_attack_batch(batch, batch_target=None):
     pid = os.getpid()  # Get process ID for debugging
     print(f"Process {pid} is generating adversarial examples for batch of size {len(batch)} \n")
     # Create a new attack instance (ART objects may not be shared directly)
-    attack = BoundaryAttack(estimator=classifier_shared, targeted=(batch_target is not None), max_iter=200, epsilon=0.01, delta=0.01 ,verbose=True) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
+    attack = BoundaryAttack(estimator=classifier_shared, targeted=(batch_target is not None), max_iter=200, epsilon=0.01, delta=0.01 ,verbose=False) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
     # Generate adversarial examples
     adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None)
     return adv_samples
