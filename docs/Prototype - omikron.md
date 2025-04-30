@@ -29,7 +29,26 @@ Because we perform a target attack in which *ATTACK* samples are modified so tha
 ---
 # Evaluation
 
+## Attack Success Rate (ASR)
+
+We want to also calculate the ASR to further evaluate our defense setup. For this, we have to define some terms:
+| Term | Description |
+| -- | -- |
+| *Attack* | ATTACK sample gets misclassified as BENIGN due to adversarial perturbation |
+| *Detection* | *Attack* sample gets detected by the detector |
+
+So only when the IDS gets fooled in a way that malicious traffic gets accepted, it is called an attack. 
+
+To calculate the ASR we first get the indices of all accepted samples from the detector (class: 'CORRECT BENIGN'). This class contains normal BENIGN samples without adversarial perturbation. We then calulate how many *Attacks* are in this class. We calculate the ASR with the following formula:
+
+`ASR = #Un-identified Attacks / #Total attacked Samples`
+
+From the ASR we calculate the the Detection Rate (DR):
+
+`DR = 1 - ASR`
+
 ## Classification
 
+In our classification result, we include the performance in how well our detector can classify the original label of a given sample (*BENIGN* / *ATTACK*) and as well the Detection Rate and the False Positive Rate (FPR). The FPR shows how many samples are incorrectly classified as BENIGN. We calculate the FPR only for un-attacked data. 
 
 ![Classification Results](images/omikron/detector_result.png)
