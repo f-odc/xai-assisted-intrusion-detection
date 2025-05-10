@@ -208,7 +208,9 @@ def predict(detector, X: pd.DataFrame, columns) -> pd.DataFrame:
         pd.DataFrame: The predicted labels in a DataFrame with the same columns and indices as the input data.
     """
     y_pred = detector.predict(X)
-    y_pred = (y_pred > 0.5)
+    y_pred_classes = np.argmax(y_pred, axis=1) # make sure that always a class with the highest probability is selected
+    # One-hot encode using Keras
+    y_pred = keras.utils.to_categorical(y_pred_classes, num_classes=4) # TODO: 4 is hardcoded, should be dynamic
     return pd.DataFrame(y_pred, columns=columns, index=X.index)
 
 
