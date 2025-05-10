@@ -25,7 +25,7 @@ from art.estimators.classification import TensorFlowV2Classifier
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from art.attacks.evasion import CarliniL2Method, FastGradientMethod, HopSkipJump, SaliencyMapMethod, ProjectedGradientDescentTensorFlowV2, BoundaryAttack
+from art.attacks.evasion import CarliniL2Method, FastGradientMethod, HopSkipJump, SaliencyMapMethod, ProjectedGradientDescentTensorFlowV2, BoundaryAttack, BasicIterativeMethod, DeepFool
 from sklearn.utils import shuffle
 import numpy as np
 import pandas as pd
@@ -241,7 +241,65 @@ def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None, feature
     return X_adv_fgsm
 
 
-def generate_hsj_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, num_cores=1) -> pd.DataFrame:
+def generate_bim_attacks(classifier, X:pd.DataFrame, target_label=None, feature_mask=None) -> pd.DataFrame:
+    """
+    Generates Basic Iterative Method White-Box attacks on a model.
+    
+    Args:
+        classifier (TensorFlowV2Classifier): The ART model to attack.
+        X (DataFrame): The features to modify.
+        target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify e.g.: [1, 0, 0, 1]. Only the features with a value of 1 will be modified. Defaults to None. If None, all features will be modified.
+        
+    Returns:
+        DataFrame: The adversarial examples
+    """
+    attack_bim = BasicIterativeMethod(estimator=classifier, eps=0.1, targeted=(target_label is not None), max_iter=10) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
+
+    # generate one-hot-encoded target labels
+    if target_label is not None:
+        target_array = np.zeros((X.shape[0], 2))
+        target_array[:, 1 - target_label] = 1 # ensures that the array is [1, 0] for target_label=1 and [0, 1] for target_label=0
+
+    # Generate adversarial examples
+    X_np = X.to_numpy()
+    X_adv_bim = attack_bim.generate(x=X_np, y=target_array if target_label is not None else None, mask=feature_mask)
+    X_adv_bim = pd.DataFrame(X_adv_bim, columns=X.columns, index=X.index)
+    print(f'Adversarial BIM examples generated. Shape: {X_adv_bim.shape}')
+
+    return X_adv_bim
+
+
+def generate_deepfool_attacks(classifier, X:pd.DataFrame, target_label=None, feature_mask=None) -> pd.DataFrame:
+    """
+    Generates DeepFool White-Box attacks on a model.
+    
+    Args:
+        classifier (TensorFlowV2Classifier): The ART model to attack.
+        X (DataFrame): The features to modify.
+        target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify e.g.: [1, 0, 0, 1]. Only the features with a value of 1 will be modified. Defaults to None. If None, all features will be modified.
+        
+    Returns:
+        DataFrame: The adversarial examples
+    """
+    attack_deepfool = DeepFool(classifier=classifier, epsilon=0.1) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
+
+    # generate one-hot-encoded target labels
+    if target_label is not None:
+        target_array = np.zeros((X.shape[0], 2))
+        target_array[:, 1 - target_label] = 1 # ensures that the array is [1, 0] for target_label=1 and [0, 1] for target_label=0
+
+    # Generate adversarial examples
+    X_np = X.to_numpy()
+    X_adv_deepfool = attack_deepfool.generate(x=X_np, y=target_array if target_label is not None else None, mask=feature_mask)
+    X_adv_deepfool = pd.DataFrame(X_adv_deepfool, columns=X.columns, index=X.index)
+    print(f'Adversarial DeepFool examples generated. Shape: {X_adv_deepfool.shape}')
+
+    return X_adv_deepfool
+
+
+def generate_hsj_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, num_cores=1, feature_mask=None) -> pd.DataFrame:
     """
     Generates HopSkipJump Black-Box attacks on a model using parallel processing.
 
@@ -250,6 +308,7 @@ def generate_hsj_attacks_parallel(classifier, X:pd.DataFrame, target_label=None,
         X (DataFrame): The features to modify.
         target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
         num_cores (int, optional): The number of CPU cores to use for parallel processing. Defaults to 1.
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify e.g.: [1, 0, 0, 1]. Only the features with a value of 1 will be modified. Defaults to None. If None, all features will be modified.
 
     Returns:
         DataFrame: The generated adversarial samples
@@ -273,10 +332,10 @@ def generate_hsj_attacks_parallel(classifier, X:pd.DataFrame, target_label=None,
 
     # Start parallel processing
     with multiprocessing.Pool(processes=num_cores, initializer=init_parallel_process, initargs=(classifier,)) as pool:
-        if target_label is None:
-            results = pool.map(generate_hsj_attack_batch, X_batches)
-        else:
-            results = pool.starmap(generate_hsj_attack_batch, zip(X_batches, target_batches))
+        results = pool.starmap(generate_hsj_attack_batch, zip(
+            X_batches, 
+            target_batches if target_batches is not None else [None] * len(X_batches), # None in zip is not allowed so we generate a None list which is identified as None in the called function
+            feature_mask if feature_mask is not None else [None] * len(X_batches)))
 
     # Merge results back into a single NumPy array
     X_adv_hsj = np.vstack(results)
@@ -426,13 +485,14 @@ def generate_cw_attack_batch(batch, batch_target=None, feature_mask=None):
     return adv_samples
 
 
-def generate_hsj_attack_batch(batch, batch_target=None):
+def generate_hsj_attack_batch(batch, batch_target=None, feature_mask=None):
     """
     Generates adversarial examples for a batch of samples using the HopSkipJump White-Box attack. Used in parallel processing.
 
     Args:
         batch (Array): The batch of samples to attack.
         batch_target (Array, optional): The one-hot encoded label the model should predict after the attack. If None, the attack is untargeted. Defaults to None.
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify. Defaults to None. If None, all features will be modified.
 
     Returns:
         Array: The adversarial modified batches.
@@ -442,7 +502,7 @@ def generate_hsj_attack_batch(batch, batch_target=None):
     # Create a new attack instance (ART objects may not be shared directly)
     attack = HopSkipJump(classifier=classifier_shared, targeted=(batch_target is not None), norm=2, init_eval=10) # set init_eval to be less than the sample size of each batch
     # Generate adversarial examples
-    adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None)
+    adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None, mask=feature_mask)
     return adv_samples
 
 
