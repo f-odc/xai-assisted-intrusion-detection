@@ -1,4 +1,4 @@
-# XAIDS: XAI-Assisted Intrusion Detection System
+# XAID: XAI-Assisted Intrusion Detection
 
 ---
 
