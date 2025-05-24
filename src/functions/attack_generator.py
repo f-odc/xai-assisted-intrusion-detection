@@ -225,7 +225,7 @@ def generate_fgsm_attacks(classifier, X:pd.DataFrame, target_label=None, feature
     Returns:
         DataFrame: The adversarial examples
     """
-    attack_fgsm = FastGradientMethod(estimator=classifier, eps=0.15, targeted=(target_label is not None)) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
+    attack_fgsm = FastGradientMethod(estimator=classifier, eps=0.1, targeted=(target_label is not None)) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
     # the higher the epsilon, the easier it will be detected
 
     # generate one-hot-encoded target labels
@@ -521,7 +521,7 @@ def generate_boundary_attack_batch(batch, batch_target=None):
     pid = os.getpid()  # Get process ID for debugging
     print(f"Process {pid} is generating adversarial examples for batch of size {len(batch)} \n")
     # Create a new attack instance (ART objects may not be shared directly)
-    attack = BoundaryAttack(estimator=classifier_shared, targeted=(batch_target is not None), max_iter=200, epsilon=0.01, delta=0.01 ,verbose=False) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
+    attack = BoundaryAttack(estimator=classifier_shared, targeted=(batch_target is not None), max_iter=200, epsilon=0.1, delta=0.01 ,verbose=False) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
     # Generate adversarial examples
     adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None)
     return adv_samples
