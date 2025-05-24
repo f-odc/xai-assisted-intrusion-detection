@@ -30,6 +30,7 @@ from sklearn.utils import shuffle
 import numpy as np
 import pandas as pd
 import os
+import keras
 import multiprocessing
 import logging
 
@@ -48,7 +49,7 @@ def convert_to_art_model(model, X_train):
         TensorFlowV2Classifier: The ART model.
     """
     # Define loss function
-    loss_object = keras.losses.BinaryCrossentropy()
+    loss_object = keras.losses.CategoricalCrossentropy()
     optimizer = keras.optimizers.Adam(learning_rate=0.001)
     input_dim = X_train.shape[1] 
 
