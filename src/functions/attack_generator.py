@@ -78,6 +78,47 @@ def convert_to_art_model(model, X_train):
     return classifier
 
 
+def split_into_classes(X:pd.DataFrame, y:pd.DataFrame, normal_class_label, attack_class_labels, split=None):
+    """
+    Splits the dataset into normal and attack classes.
+
+    Args:
+        X (numpy.ndarray): The input samples.
+        y (numpy.ndarray): The labels.
+        normal_class_label (str): The label for the normal class.
+        attack_class_labels (list of str): The labels for the attack classes.
+        split (float, optional): The proportion of data to use for the normal class. Defaults to None. If None, 50% of the data will be used for the normal class.
+
+    Returns:
+        dict: A dictionary where keys are class names and values are tuples (X_subset, y_subset) of the normal and attack classes.
+    """
+    if split is None:
+        split = 0.5  # Default split if not provided
+    # get normal samples
+    X_normal_class = X.sample(frac=split, random_state=42)
+    y_normal_class = y.loc[X_normal_class.index]
+    X_attack = X.drop(X_normal_class.index)
+    y_attack = y.drop(y_normal_class.index)
+
+    # Compute samples per attack class
+    num_classes = len(attack_class_labels)
+    total_samples = len(X_attack)
+    base_samples_per_class = total_samples // num_classes
+    remainder = total_samples % num_classes
+    # Dictionary to store the data splits
+    class_splits = {}
+    start = 0
+    for i, label in enumerate(attack_class_labels):
+        extra = remainder if i == 0 else 0  # First class gets the remainder
+        end = start + base_samples_per_class + extra
+        class_splits[label] = (X_attack[start:end], y_attack[start:end])
+        start = end
+
+    # add normal class to the dictionary
+    class_splits[normal_class_label] = (X_normal_class, y_normal_class)
+    return class_splits
+
+
 def split_into_attack_classes(X, y, class_labels):
     """
     Splits the dataset evenly into specified attack classes with given labels.
