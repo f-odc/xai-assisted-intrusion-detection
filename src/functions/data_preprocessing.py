@@ -236,15 +236,14 @@ def sample_balanced_data(labels, features, sample_size, random_state) -> tuple[p
         ndarray: An array of used indices.
     """
     print("--- Sampling balanced data ---")
-    # Convert one-hot encoding to a single-label series (multi-class)
-    class_labels = labels.idxmax(axis=1)  # Get the class name for each row
-    # Create a new DataFrame that has the original indices and class labels
-    temp_df = pd.DataFrame({'Class': class_labels}, index=labels.index)
-    # Sample while maintaining alignment
-    sampled_indices = temp_df.groupby('Class', group_keys=False).apply(
-        lambda x: x.sample(min(len(x), sample_size), random_state=random_state)
-    ).index
-    # Select the sampled data from both DataFrames
+
+    # Sample from each class column and concat the results
+    sampled_indices = pd.concat([
+        labels[labels[col] == 1].sample(min(sample_size, labels[col].sum()), random_state=random_state)
+        for col in labels.columns
+    ]).index
+
+    # Subset the original DataFrames
     sampled_labels = labels.loc[sampled_indices]
     sampled_features = features.loc[sampled_indices]
     print(f"Sample to shape: {sampled_features.shape}")
