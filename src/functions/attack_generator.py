@@ -25,7 +25,7 @@ from art.estimators.classification import TensorFlowV2Classifier
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from art.attacks.evasion import CarliniL2Method, FastGradientMethod, HopSkipJump, SaliencyMapMethod, ProjectedGradientDescentTensorFlowV2, BoundaryAttack, BasicIterativeMethod, DeepFool
+from art.attacks.evasion import CarliniL2Method, FastGradientMethod, HopSkipJump, SaliencyMapMethod, ProjectedGradientDescentTensorFlowV2, BoundaryAttack, BasicIterativeMethod, DeepFool, ZooAttack
 from sklearn.utils import shuffle
 import numpy as np
 import pandas as pd
@@ -492,6 +492,53 @@ def generate_boundary_attacks_parallel(classifier, X:pd.DataFrame, target_label=
     return X_adv_boundary
 
 
+def generate_zoo_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, num_cores=1, feature_mask=None) -> pd.DataFrame:
+    """
+    Generates Zoo Black-Box attacks on a model using parallel processing.
+
+    Args:
+        classifier (TensorFlowV2Classifier): The ART model to attack.
+        X (DataFrame): The features to modify.
+        target_label (int, optional): The label the model should predict after the attack: `1` for `BENIGN`, `0` for `ATTACK`. If None, the attack is untargeted. Defaults to None.
+        num_cores (int, optional): The number of CPU cores to use for parallel processing. Defaults to 1.
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify e.g.: [1, 0, 0, 1]. Only the features with a value of 1 will be modified. Defaults to None. If None, all features will be modified.
+
+    Returns:
+        DataFrame: The generated adversarial samples
+    """
+    print(f"Running attack using {num_cores} CPU cores...\n")
+
+    # Split data into `num_cores` equal parts
+    def split_into_batches(data, num_splits):
+        split_size = len(data) // num_splits
+        return [data[i * split_size: (i + 1) * split_size] for i in range(num_splits - 1)] + [data[(num_splits - 1) * split_size:]]
+
+    # convert X
+    X_np = X.to_numpy()
+    # generate batches for parallel processing
+    X_batches = split_into_batches(X_np, num_cores)
+    # generate one-hot-encoded target labels
+    if target_label is not None:
+        target_array = np.zeros((X.shape[0], 2))
+        target_array[:, 1 - target_label] = 1 # ensures that the array is [1, 0] for target_label=1 and [0, 1] for target_label=0
+    target_batches = split_into_batches(target_array, num_cores) if target_label is not None else None
+
+    # Start parallel processing
+    with multiprocessing.Pool(processes=num_cores, initializer=init_parallel_process, initargs=(classifier,)) as pool:
+        if target_label is None:
+            results = pool.map(generate_zoo_attack_batch, X_batches)
+        else:
+            results = pool.starmap(generate_zoo_attack_batch, zip(X_batches, target_batches))
+
+    # Merge results back into a single NumPy array
+    X_adv_zoo = np.vstack(results)
+    # Create new DataFrame with old indices and column names    
+    X_adv_zoo = pd.DataFrame(X_adv_zoo, columns=X.columns, index=X.index)
+    print(f'Adversarial Boundary examples generated. Shape: {X_adv_zoo.shape}')
+
+    return X_adv_zoo
+
+
 # --- internal functions for parallel processing ---
 
 
@@ -565,4 +612,25 @@ def generate_boundary_attack_batch(batch, batch_target=None):
     attack = BoundaryAttack(estimator=classifier_shared, targeted=(batch_target is not None), max_iter=200, epsilon=0.1, delta=0.01 ,verbose=False) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
     # Generate adversarial examples
     adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None)
+    return adv_samples
+
+
+def generate_zoo_attack_batch(batch, batch_target=None, feature_mask=None):
+    """
+    Generates adversarial examples for a batch of samples using the Zoo attack. Used in parallel processing.
+
+    Args:
+        batch (Array): The batch of samples to attack.
+        batch_target (Array, optional): The one-hot encoded label the model should predict after the attack. If None, the attack is untargeted. Defaults to None.
+        feature_mask (numpy.ndarray, optional): A mask to specify which features to modify. Defaults to None. If None, all features will be modified.
+
+    Returns:
+        Array: The adversarial modified batches.
+    """
+    pid = os.getpid()  # Get process ID for debugging
+    print(f"Process {pid} is generating adversarial examples for batch of size {len(batch)} \n")
+    # Create a new attack instance (ART objects may not be shared directly)
+    attack = ZooAttack(classifier=classifier_shared, confidence=0.1, targeted=(batch_target is not None), nb_parallel=70)
+    # Generate adversarial examples
+    adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None, mask=feature_mask)
     return adv_samples
