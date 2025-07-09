@@ -25,7 +25,8 @@ from art.estimators.classification import TensorFlowV2Classifier
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from art.attacks.evasion import CarliniL2Method, FastGradientMethod, HopSkipJump, SaliencyMapMethod, ProjectedGradientDescentTensorFlowV2, BoundaryAttack, BasicIterativeMethod, DeepFool, ZooAttack, NewtonFool
+from art.attacks.evasion import CarliniL2Method, FastGradientMethod, HopSkipJump, SaliencyMapMethod, ProjectedGradientDescentTensorFlowV2, BasicIterativeMethod, DeepFool, ZooAttack, NewtonFool
+from functions.modified_attacks.boundary import BoundaryAttack
 from sklearn.utils import shuffle
 import numpy as np
 import pandas as pd
@@ -446,7 +447,7 @@ def generate_pgd_attacks(classifier, X:pd.DataFrame, target_label=None, feature_
     return X_adv_pgd
 
 
-def generate_boundary_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, num_cores=1) -> pd.DataFrame:
+def generate_boundary_attacks_parallel(classifier, X:pd.DataFrame, target_label=None, num_cores=1, feature_mask=None) -> pd.DataFrame:
     """
     Generates Boundary Black-Box attacks on a model.
     
@@ -460,7 +461,6 @@ def generate_boundary_attacks_parallel(classifier, X:pd.DataFrame, target_label=
         DataFrame: The adversarial examples
     """
     print(f"Running attack using {num_cores} CPU cores...\n")
-
     # Split data into `num_cores` equal parts
     def split_into_batches(data, num_splits):
         split_size = len(data) // num_splits
@@ -478,10 +478,10 @@ def generate_boundary_attacks_parallel(classifier, X:pd.DataFrame, target_label=
 
     # Start parallel processing
     with multiprocessing.Pool(processes=num_cores, initializer=init_parallel_process, initargs=(classifier,)) as pool:
-        if target_label is None:
-            results = pool.map(generate_boundary_attack_batch, X_batches)
-        else:
-            results = pool.starmap(generate_boundary_attack_batch, zip(X_batches, target_batches))
+        results = pool.starmap(generate_boundary_attack_batch, zip(
+            X_batches, 
+            target_batches if target_batches is not None else [None] * len(X_batches),
+            feature_mask if feature_mask is not None else [None] * len(X_batches)))
 
     # Merge results back into a single NumPy array
     X_adv_boundary = np.vstack(results)
@@ -641,7 +641,7 @@ def generate_hsj_attack_batch(batch, batch_target=None, feature_mask=None):
     return adv_samples
 
 
-def generate_boundary_attack_batch(batch, batch_target=None):
+def generate_boundary_attack_batch(batch, batch_target=None, feature_mask=None):
     """
     Generates adversarial examples for a batch of samples using the HopSkipJump White-Box attack. Used in parallel processing.
 
@@ -655,7 +655,7 @@ def generate_boundary_attack_batch(batch, batch_target=None):
     pid = os.getpid()  # Get process ID for debugging
     print(f"Process {pid} is generating adversarial examples for batch of size {len(batch)} \n")
     # Create a new attack instance (ART objects may not be shared directly)
-    attack = BoundaryAttack(estimator=classifier_shared, targeted=(batch_target is not None), max_iter=200, epsilon=0.1, delta=0.01 ,verbose=False) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
+    attack = BoundaryAttack(estimator=classifier_shared, targeted=(batch_target is not None), max_iter=200, epsilon=0.1, delta=0.01 , verbose=False, feature_mask=feature_mask) # ε tune this for stronger/weaker attacks: 0.01 weak, 0.1 balanced, 0.3-0.5 strong, 1 very strong
     # Generate adversarial examples
     adv_samples = attack.generate(x=np.array(batch), y=batch_target if batch_target is not None else None)
     return adv_samples
