@@ -151,6 +151,30 @@ def split_into_attack_classes(X, y, class_labels):
     return class_splits
 
 
+def create_feature_mask(all_features, immutable_features):
+    """
+    Create a binary feature mask to highlight features that should be excluded from adversarial perturbation.
+
+    Parameters:
+        all_features (list of str): List of all feature names (in order).
+        immutable_features (list of str): List of features that must NOT be changed.
+
+    Returns:
+        np.ndarray: Binary array of shape (len(all_features),), with 1 = mutable, 0 = immutable.
+    """
+    # Strip and standardize feature names for matching
+    standardized_all = [f.strip() for f in all_features]
+    standardized_immutable = set(f.strip() for f in immutable_features)
+
+    # Generate mask: 1 for mutable, 0 for immutable
+    mask = np.array([
+        0 if feat in standardized_immutable else 1
+        for feat in standardized_all
+    ], dtype=bool)
+
+    return mask
+
+
 def evaluate_art_model(model, X_test:pd.DataFrame, y_test:pd.DataFrame) -> pd.DataFrame:
     """
     Evaluates an ART model on a test set. Prints the accuracy, classification report, and true/false positives/negatives.
