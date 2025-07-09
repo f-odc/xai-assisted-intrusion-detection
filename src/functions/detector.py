@@ -93,6 +93,7 @@ def build_detector_dataset(class_samples):
     
     for i, class_name in enumerate(class_labels):
         samples = class_samples[class_name]
+        print(f"Class '{class_name}' has {samples.shape[0]} samples.")
         # Create one-hot encoding for the class
         one_hot = np.zeros((samples.shape[0], num_classes))
         one_hot[:, i] = 1  
@@ -253,5 +254,5 @@ def plot_performance(history):
     plt.title('model accuracy')
     plt.ylabel('Loss / Accuracy')
     plt.xlabel('epoch')
-    plt.legend(['train', 'val', 'train_loss', 'val_loss'], loc='upper left')
+    plt.legend(['train', 'val', 'train_loss', 'val_loss'], loc='upper right')
     plt.show()
