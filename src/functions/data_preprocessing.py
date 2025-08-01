@@ -176,6 +176,9 @@ def combine_all_data_files(path=None):
     """
     Combines all CSV files in the specified directory into a single DataFrame.
 
+    Args:
+        path (str, optional): The path to the directory containing the data files. If None, it defaults to '../../datasets/CICIDS2017/raw/'.
+
     Returns:
         DataFrame: A pandas DataFrame containing all combined data from CSV files.
     """
