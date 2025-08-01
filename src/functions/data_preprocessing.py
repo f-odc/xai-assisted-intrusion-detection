@@ -1,8 +1,8 @@
 """
-A module for preprocessing raw CICIDS2017 data to create a well-suited dataset for machine learning models.
+A module for preprocessing raw data from network datasets to create a well-suited dataset for machine learning models.
 
 Functions:
-- build_dataset: Builds a dataset from the CICIDS2017 data. Include only the specified labels.
+- build_dataset: Builds a dataset from the given data. Include only the specified labels.
 - build_nsl_kdd_dataset: Builds a dataset from the NSL-KDD data. Include only the specified labels.
 - generate_normalizer: Generates a normalizer for the given DataFrame.
 - preprocess_data: Preprocess a dataset to create a well-suited dataset for machine learning models.
@@ -32,6 +32,9 @@ import pandas as pd
 import os
 import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
+from pathlib import Path
+CURRENT_FILE = Path(__file__).resolve()
+BASE_DIR = CURRENT_FILE.parents[2]
 
 
 def build_dataset(path=None, label_names=None):
@@ -39,7 +42,7 @@ def build_dataset(path=None, label_names=None):
     Builds a dataset from the given data. Include only the specified labels.
     
     Args:
-        path (str, optional): The path to the directory containing the data files. If None, it defaults to '../../datasets/CICIDS2017/raw/'.
+        path (str, optional): The path to the directory containing the raw data files (e.g. 'CICIoV2024/raw/'). If None, it defaults to 'CICIDS2017/raw/'.
         label_names (Array, optional): A array of column names to extract as labels e.g. ['BENIGN', 'DDoS']. If None, all labels will be used. Defaults to None.
     
     Returns:
@@ -182,17 +185,17 @@ def combine_all_data_files(path=None):
     Returns:
         DataFrame: A pandas DataFrame containing all combined data from CSV files.
     """
-    print("--- Combining all CICIDS2017 files ---")
-    # combine all CICIDS2017 files
+    print("--- Combining all Dataset files ---")
+    # combine all Dataset files
     if path is None:
-        path = '../../datasets/CICIDS2017/raw/'
+        path = BASE_DIR / 'datasets/CICIDS2017/raw'
     else:
-        path = '../../datasets/' + path
+        path = BASE_DIR / 'datasets' / path
     combined_df = pd.DataFrame()
     for file in os.listdir(path):
         if file.endswith('.csv'):
             print(file)
-            df = pd.read_csv(path + file, low_memory=False, nrows=1000000)
+            df = pd.read_csv(path / file, low_memory=False, nrows=1000000)
             combined_df = pd.concat([combined_df, df], ignore_index=True)
     return combined_df
 
