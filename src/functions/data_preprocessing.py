@@ -34,19 +34,20 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
 
 
-def build_dataset(label_names=None):
+def build_dataset(path=None, label_names=None):
     """
-    Builds a dataset from the CICIDS2017 data. Include only the specified labels.
+    Builds a dataset from the given data. Include only the specified labels.
     
     Args:
+        path (str, optional): The path to the directory containing the data files. If None, it defaults to '../../datasets/CICIDS2017/raw/'.
         label_names (Array, optional): A array of column names to extract as labels e.g. ['BENIGN', 'DDoS']. If None, all labels will be used. Defaults to None.
     
     Returns:
-        DataFrame: The generated CICIDS2017 dataset.
+        DataFrame: The generated dataset.
     """
-    print("-- Building CICIDS2017 dataset --")
+    print("-- Building dataset --")
     # Combine data files
-    df = combine_all_data_files()
+    df = combine_all_data_files(path)
     # Remove NaN and Infinity values
     df = remove_nan_values(df)
     # Extract unwanted labels
@@ -114,9 +115,18 @@ def generate_normalizer(df:pd.DataFrame, norm_type: int):
     print("-- Generating normalizer --")
     # Split data into labels and features
     _, feature_df = split_label_and_features(df)
+    # Remove non-numeric columns
+    non_numeric_cols = feature_df.select_dtypes(exclude=[np.number]).columns
+    print(f"Numeric Features: {non_numeric_cols}")
+    feature_df.drop(columns=non_numeric_cols, inplace=True)
     # Remove irrelevant features
     zero_columns = get_irrelevant_features(feature_df)
+    print(f"Zero Columns: {zero_columns}")
     feature_df.drop(columns=zero_columns, inplace=True)
+    # combine zero columns and non-numeric columns
+    zero_columns = zero_columns.union(non_numeric_cols)
+    print(f"Combined Zero Columns: {zero_columns.tolist()}")
+    
     if norm_type == 0: # min-max-normalization
         return generate_min_max_normalizer(feature_df), zero_columns
     elif norm_type == 1: # standardization
@@ -162,7 +172,7 @@ def preprocess_data(df:pd.DataFrame, encoding_type: int, normalizer, zero_column
     return feature_df, label_df, used_indices
 
 
-def combine_all_data_files():
+def combine_all_data_files(path=None):
     """
     Combines all CSV files in the specified directory into a single DataFrame.
 
@@ -171,12 +181,15 @@ def combine_all_data_files():
     """
     print("--- Combining all CICIDS2017 files ---")
     # combine all CICIDS2017 files
-    path = '../../datasets/CICIDS2017/raw/'
+    if path is None:
+        path = '../../datasets/CICIDS2017/raw/'
+    else:
+        path = '../../datasets/' + path
     combined_df = pd.DataFrame()
     for file in os.listdir(path):
         if file.endswith('.csv'):
             print(file)
-            df = pd.read_csv(path + file)
+            df = pd.read_csv(path + file, low_memory=False, nrows=1000000)
             combined_df = pd.concat([combined_df, df], ignore_index=True)
     return combined_df
 
